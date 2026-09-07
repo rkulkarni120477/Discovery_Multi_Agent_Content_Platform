@@ -3,10 +3,16 @@ import type { AgentRunStatus, ParsedDocument, ScenarioKey } from "../types";
 const AGENT_URL = process.env.AGENT_SERVICE_URL || "http://localhost:8000";
 
 async function agentFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${AGENT_URL}${path}`, {
-    ...init,
-    headers: { "Content-Type": "application/json", ...(init?.headers || {}) },
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${AGENT_URL}${path}`, {
+      ...init,
+      headers: { "Content-Type": "application/json", ...(init?.headers || {}) },
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown connection error";
+    throw new Error(`Agent service is not reachable at ${AGENT_URL}${path}: ${message}`);
+  }
   if (!response.ok) {
     const body = await response.text().catch(() => "");
     throw new Error(`Agent service ${path} returned ${response.status}: ${body}`);

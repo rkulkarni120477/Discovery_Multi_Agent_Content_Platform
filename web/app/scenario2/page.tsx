@@ -8,7 +8,7 @@ export default function Scenario2Page() {
         <h1 className="text-2xl font-semibold">Scenario 2 — Literacy Strategy Integration</h1>
         <div className="flex gap-4 text-sm">
           <Link href="/" className="underline underline-offset-4 text-neutral-600 dark:text-neutral-400">
-            Change scenario
+            Main page
           </Link>
           <Link href="/jobs" className="underline underline-offset-4 text-neutral-600 dark:text-neutral-400">
             View past runs
@@ -20,7 +20,7 @@ export default function Scenario2Page() {
         LangGraph pipeline will screen the strongest lesson/strategy combination, deeply analyze the
         selected lesson, plan and draft a revision, run five parallel QA passes, and produce a final
         revised lesson with full rationale — pausing for your review at the three judgment calls the
-        workflow can't safely automate.
+        workflow can&apos;t safely automate.
       </p>
       <Scenario2UploadForm />
     </main>
