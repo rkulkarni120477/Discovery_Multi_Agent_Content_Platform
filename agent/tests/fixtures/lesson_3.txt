@@ -1,0 +1,33 @@
+Lesson 04: Exploring Simple Circuits (Grade 3, Explore Phase, 5E Model)
+
+Learning Objective: Students will construct simple circuits and identify the conditions needed to
+light a bulb.
+
+Performance Expectation: 4-PS3-2. Make observations to provide evidence that energy can be
+transferred from place to place by sound, light, heat, and electric currents.
+DCI: PS3.B — Conservation of Energy and Energy Transfer
+Focal SEP: Constructing Explanations and Designing Solutions
+Focal CCC: Energy and Matter
+
+Timing: 45 minutes
+
+Student-Facing Sequence:
+1. Hook (5 min): Students examine a disassembled flashlight and discuss with a partner what parts
+   they think are needed to make the bulb light up.
+2. Materials Exploration (10 min): Each group receives a battery, a bulb, and two wires, and is
+   challenged to light the bulb using trial and error.
+3. Structured Circuit Building (15 min): Following a diagram, students build a complete circuit and
+   record which configurations worked and which did not in a simple chart (works / doesn't work).
+4. Variation Challenge (10 min): Groups try adding a switch or a second bulb and record what changes.
+5. Wrap-Up Discussion (5 min): Whole-class share-out: one group at a time explains what made their
+   circuit work.
+
+Teacher Notes: Some groups may struggle to articulate why a configuration worked. Encourage them to
+point to the diagram while explaining.
+
+Vocabulary: circuit, conductor, insulator, closed circuit, open circuit.
+
+Assessment Opportunity: Completed works/doesn't-work chart with at least three configurations tried.
+
+Existing Literacy Supports: A labeled diagram of a complete circuit is provided, but there is no
+sentence frame or writing support for the explanation portion of the wrap-up.

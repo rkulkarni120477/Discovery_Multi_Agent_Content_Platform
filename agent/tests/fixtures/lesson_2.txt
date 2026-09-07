@@ -1,0 +1,34 @@
+Lesson 03: Investigating Erosion and Deposition (Grade 3, Explore Phase, 5E Model)
+
+Learning Objective: Students will investigate the effects of water flow rate on erosion and
+deposition of sand.
+
+Performance Expectation: 3-ESS2-1. Represent data in tables and graphical displays to describe
+typical weather conditions expected during a particular season.
+DCI: ESS2.D — Weather and Climate
+Focal SEP: Analyzing and Interpreting Data
+Focal CCC: Cause and Effect
+
+Timing: 50 minutes
+
+Student-Facing Sequence:
+1. Hook (5 min): Students view two photographs of a riverbank, one from ten years ago and one recent,
+   and discuss with a partner what might have changed and why.
+2. Investigation Setup (10 min): Groups build a stream table using a sand-filled tray tilted at a
+   fixed angle, with a cup for controlled water pouring.
+3. Trial 1 — Slow Pour (10 min): Students pour water slowly, observe where sand moves, and sketch the
+   resulting pattern.
+4. Trial 2 — Fast Pour (10 min): Students repeat with a faster pour rate, sketch the new pattern, and
+   record observations in a data table comparing both trials.
+5. Wrap-Up Discussion (15 min): Small groups compare their two trials and discuss which pour rate
+   caused more erosion, then share one observation with the whole class.
+
+Teacher Notes: Emphasize the vocabulary "erosion" and "deposition" during both trials. Ask "why"
+follow-up questions after each trial to push beyond observation into explanation.
+
+Vocabulary: erosion, deposition, sediment, flow rate.
+
+Assessment Opportunity: Completed data table comparing slow vs. fast pour observations.
+
+Existing Literacy Supports: None beyond the data table headers; there is no dedicated space for
+students to explain their reasoning in writing.
