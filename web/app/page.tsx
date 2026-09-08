@@ -24,7 +24,7 @@ export default function Home() {
   return (
     <main className="flex-1 max-w-2xl mx-auto w-full px-6 py-16">
       <div className="flex items-center justify-between mb-2">
-        <h1 className="text-2xl font-semibold">Discovery Education — Scenario Agents</h1>
+        <h1 className="text-2xl font-semibold">Multi-Agent Scenario Executor</h1>
         <Link href="/jobs" className="text-sm underline underline-offset-4 text-neutral-600 dark:text-neutral-400">
           View past runs
         </Link>

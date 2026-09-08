@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Discovery Education — Scenario 2",
+  title: "Multi-Agent Scenario Executor",
   description: "Literacy strategy integration workflow for Discovery Education science lessons.",
 };
 

@@ -115,9 +115,14 @@ export default function JobDetailPage() {
             </p>
           )}
         </div>
-        <Link href="/jobs" className="text-sm underline underline-offset-4 text-neutral-600 dark:text-neutral-400">
-          All runs
-        </Link>
+        <div className="flex gap-4 text-sm">
+          <Link href="/" className="underline underline-offset-4 text-neutral-600 dark:text-neutral-400">
+            Home
+          </Link>
+          <Link href="/jobs" className="underline underline-offset-4 text-neutral-600 dark:text-neutral-400">
+            All runs
+          </Link>
+        </div>
       </div>
 
       {error && <p className="text-sm text-red-600 dark:text-red-400 mb-4">{error}</p>}

@@ -32,10 +32,17 @@ export default function Scenario1RemediationsPage() {
 
   return (
     <main className="flex-1 max-w-5xl mx-auto w-full px-6 py-12">
-      <Link href={`/jobs/${jobId}`} className="text-sm underline underline-offset-4 text-neutral-600 dark:text-neutral-400">
-        Back to run
-      </Link>
-      <h1 className="mt-6 text-2xl font-semibold">Recommendations and Remediations</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-semibold">Recommendations and Remediations</h1>
+        <div className="flex gap-4 text-sm">
+          <Link href="/" className="underline underline-offset-4 text-neutral-600 dark:text-neutral-400">
+            Home
+          </Link>
+          <Link href={`/jobs/${jobId}`} className="underline underline-offset-4 text-neutral-600 dark:text-neutral-400">
+            Back to run
+          </Link>
+        </div>
+      </div>
       {error && <p className="mt-4 text-sm text-red-600 dark:text-red-400">{error}</p>}
       {!pkg && !error && <p className="mt-4 text-sm text-neutral-500">Loading recommendations...</p>}
       {pkg && (
