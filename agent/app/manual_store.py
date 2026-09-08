@@ -16,6 +16,7 @@ from langgraph.types import Command, interrupt
 _executor = ThreadPoolExecutor(max_workers=4)
 _lock = threading.Lock()
 _errors: dict[str, str] = {}
+_in_flight: set[str] = set()
 
 APPROVE_STEP = "__approve_manual_step__"
 
@@ -32,17 +33,26 @@ def _invoke(graph: Any, run_id: str, payload: Any) -> None:
     except Exception:  # noqa: BLE001
         with _lock:
             _errors[run_id] = traceback.format_exc()
+    finally:
+        with _lock:
+            _in_flight.discard(run_id)
 
 
 def start_run(graph: Any, run_id: str, initial_state: dict[str, Any]) -> None:
+    with _lock:
+        _in_flight.add(run_id)
     _executor.submit(_invoke, graph, run_id, initial_state)
 
 
 def approve_step(graph: Any, run_id: str) -> None:
+    with _lock:
+        _in_flight.add(run_id)
     _executor.submit(_invoke, graph, run_id, Command(resume=APPROVE_STEP))
 
 
 def accept_checkpoint(graph: Any, run_id: str, value: Any) -> None:
+    with _lock:
+        _in_flight.add(run_id)
     _executor.submit(_invoke, graph, run_id, Command(resume=value))
 
 
@@ -53,6 +63,11 @@ def get_state(graph: Any, run_id: str):
 def get_last_error(run_id: str) -> str | None:
     with _lock:
         return _errors.get(run_id)
+
+
+def is_in_flight(run_id: str) -> bool:
+    with _lock:
+        return run_id in _in_flight
 
 
 def manual_step(step: int, name: str, fn: Any) -> Any:

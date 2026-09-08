@@ -54,7 +54,14 @@ export function ManualJobDetail({ scenario }: { scenario: "scenario1" | "scenari
       const next = await getManualJobStatus(scenario, jobId);
       setStatus(next);
       setSelectedStep(next.step ?? 1);
-      if (approvedStep !== null && next.step !== approvedStep) {
+      const reachedNextGate =
+        approvedStep !== null &&
+        next.step !== approvedStep;
+      const reachedSameStepReview =
+        approvedStep !== null &&
+        next.status === "paused" &&
+        next.interrupt_type !== "manual_approval";
+      if (reachedNextGate || reachedSameStepReview) {
         setApprovedStep(null);
       }
       if (next.status === "complete") setResult(await getManualJobResult(scenario, jobId));
@@ -66,7 +73,9 @@ export function ManualJobDetail({ scenario }: { scenario: "scenario1" | "scenari
   useEffect(() => {
     refresh();
     const timer = setInterval(refresh, 1500);
-    return () => clearInterval(timer);
+    return () => {
+      clearInterval(timer);
+    };
   }, [refresh]);
 
   async function approve() {
@@ -108,14 +117,26 @@ export function ManualJobDetail({ scenario }: { scenario: "scenario1" | "scenari
             <div className="mb-5 border border-orange-300 bg-orange-50 p-5 dark:border-orange-800 dark:bg-orange-950/40">
               <h2 className="text-lg font-semibold">Approve Step {status.step}</h2>
               <p className="mt-2 text-sm text-neutral-700 dark:text-neutral-200">Review the step details above, then approve this step to execute it.</p>
-              <button
-                type="button"
-                disabled={submitting || approvedStep === status.step}
-                onClick={approve}
-                className="mt-4 bg-orange-600 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                Approve Step
-              </button>
+              <div className="mt-4 flex flex-wrap items-center gap-4">
+                <button
+                  type="button"
+                  disabled={submitting || approvedStep === status.step}
+                  onClick={approve}
+                  className="bg-orange-600 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Approve Step
+                </button>
+                {approvedStep === status.step && (
+                  <div className="flex min-w-64 items-center gap-3" role="status" aria-live="polite">
+                    <div className="h-2 flex-1 overflow-hidden rounded-full bg-green-100 dark:bg-green-950">
+                      <div className="h-full w-2/5 animate-pulse rounded-full bg-green-500" />
+                    </div>
+                    <span className="text-xs font-medium text-green-700 dark:text-green-300">
+                      Step in progress
+                    </span>
+                  </div>
+                )}
+              </div>
               {approvedStep === status.step && (
                 <p className="mt-2 text-sm text-orange-800 dark:text-orange-200">Moving to next step…</p>
               )}

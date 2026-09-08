@@ -34,7 +34,17 @@ def build_status(graph: Any, run_id: str, total_steps: int, phases: list[str]) -
     values = snapshot.values
     error = manual_store.get_last_error(run_id)
     step = interrupt_payload.get("step") if interrupt_payload else values.get("step")
-    status = "error" if error else "complete" if values.get("status") == "complete" else "paused" if interrupt_type else "running"
+    status = (
+        "error"
+        if error
+        else "complete"
+        if values.get("status") == "complete"
+        else "running"
+        if manual_store.is_in_flight(run_id)
+        else "paused"
+        if interrupt_type
+        else "running"
+    )
     return ManualRunStatusResponse(
         run_id=run_id,
         status=status,
