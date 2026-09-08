@@ -17,12 +17,37 @@ import type {
   Scenario2DocumentKey,
   Scenario1FinalPackage,
   Scenario3FinalPackage,
+  ScenarioKey,
 } from "../types";
 import { SCENARIO2_DOCUMENT_KEYS } from "../types";
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
 
 export const jobsRouter = Router();
+
+async function getAgentStatus(job: { scenario: ScenarioKey; execution_mode: string }, jobId: string) {
+  if (job.execution_mode === "manual") return agent.getManualRunStatus(job.scenario, jobId);
+  try {
+    return await agent.getRunStatus(job.scenario, jobId);
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("returned 404")) {
+      return agent.getManualRunStatus(job.scenario, jobId);
+    }
+    throw error;
+  }
+}
+
+async function getAgentResult(job: { scenario: ScenarioKey; execution_mode: string }, jobId: string) {
+  if (job.execution_mode === "manual") return agent.getManualRunResult(job.scenario, jobId);
+  try {
+    return await agent.getRunResult(job.scenario, jobId);
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("returned 404")) {
+      return agent.getManualRunResult(job.scenario, jobId);
+    }
+    throw error;
+  }
+}
 
 /**
  * @openapi
@@ -164,7 +189,7 @@ jobsRouter.get("/:id", async (req, res) => {
     return;
   }
   try {
-    const status = await agent.getRunStatus(job.scenario, req.params.id);
+    const status = await getAgentStatus(job, req.params.id);
     updateJobStatus(job.id, status.status, status.phase, status.step);
     const response: JobStatusResponse = {
       ...status,
@@ -221,7 +246,9 @@ jobsRouter.post("/:id/resume", async (req, res) => {
     return;
   }
   try {
-    const status = await agent.resumeRun(job.scenario, req.params.id, req.body?.value ?? null);
+    const status = job.execution_mode === "manual"
+      ? await agent.resumeManualCheckpoint(job.scenario, req.params.id, req.body?.value ?? null)
+      : await agent.resumeRun(job.scenario, req.params.id, req.body?.value ?? null);
     updateJobStatus(job.id, status.status, status.phase, status.step);
     res.json(status);
   } catch (err) {
@@ -296,7 +323,7 @@ jobsRouter.get("/:id/result", async (req, res) => {
     return;
   }
   try {
-    const result = await agent.getRunResult(job.scenario, req.params.id);
+    const result = await getAgentResult(job, req.params.id);
     res.json(result);
   } catch (err) {
     res.status(502).json({ error: err instanceof Error ? err.message : "Failed to fetch result" });
@@ -336,7 +363,7 @@ jobsRouter.get("/:id/result.docx", async (req, res) => {
     return;
   }
   try {
-    const result = await agent.getRunResult(job.scenario, req.params.id);
+    const result = await getAgentResult(job, req.params.id);
     let buffer: Buffer;
     if (job.scenario === "scenario1") {
       buffer = await buildScenario1FinalPackageDocx(result as unknown as Scenario1FinalPackage);
@@ -368,7 +395,7 @@ jobsRouter.get("/:id/result.xlsx", async (req, res) => {
     return;
   }
   try {
-    const result = await agent.getRunResult(job.scenario, req.params.id);
+    const result = await getAgentResult(job, req.params.id);
     const buffer = await buildFinalPackageXlsx(
       result as unknown as FinalPackage | Scenario1FinalPackage | Scenario3FinalPackage
     );

@@ -33,12 +33,13 @@ def identify_specific_gaps(state: ScenarioState1) -> dict:
 
 def recommend_remediation(state: ScenarioState1) -> dict:
     result = ask_structured(
-        "For each gap below, recommend targeted content, instructional experiences, or additional "
-        "evidence needed to address it -- be concrete and specific enough that a curriculum "
-        "writer could act on the recommendation directly.\n\n"
+        "For each gap below, provide one concise, actionable remediation recommendation. "
+        "Return one item per gap with the same SC code, a short gap description, and a concrete "
+        "curriculum change a writer can implement. Do not repeat the input or add commentary.\n\n"
         f"Gap details:\n{json.dumps(state['gap_details'], indent=2)}\n\n"
         f"Alignment/evidence criteria:\n{json.dumps(state['alignment_criteria'], indent=2)}",
         GapAnalysis,
+        max_tokens=1800,
     )
     return {
         "gap_analysis": [g.model_dump() for g in result.gaps],

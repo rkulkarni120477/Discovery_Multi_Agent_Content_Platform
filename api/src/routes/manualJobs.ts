@@ -36,7 +36,7 @@ manualJobsRouter.post(
       filenames.sc_performance_targets = sources.performanceTargets.filename;
       filenames.sc_vertical_articulation = sources.verticalArticulation.filename;
       const jobId = crypto.randomUUID();
-      createJob(jobId, "scenario1", filenames);
+      createJob(jobId, "scenario1", filenames, "manual");
       await agent.startManualRun("scenario1", jobId, documents);
       res.status(201).json({ job_id: jobId, status: "paused" });
     } catch (err) { res.status(502).json({ error: err instanceof Error ? err.message : "Failed to start manual job" }); }
@@ -55,7 +55,7 @@ manualJobsRouter.post(
       const filenames: Record<string, string> = {};
       for (const key of SCENARIO2_DOCUMENT_KEYS) { documents[key] = await parsed(files![key][0]); filenames[key] = documents[key].filename; }
       const jobId = crypto.randomUUID();
-      createJob(jobId, "scenario2", filenames);
+      createJob(jobId, "scenario2", filenames, "manual");
       await agent.startManualRun("scenario2", jobId, documents);
       res.status(201).json({ job_id: jobId, status: "paused" });
     } catch (err) { res.status(502).json({ error: err instanceof Error ? err.message : "Failed to start manual job" }); }
@@ -76,7 +76,7 @@ manualJobsRouter.post(
       const standardsDoc = await parsed(standards);
       const lessonDocs = await Promise.all(lessons.map(parsed));
       const jobId = crypto.randomUUID();
-      createJob(jobId, "scenario3", { scope_sequence: scopeDoc.filename, standards_reference: standardsDoc.filename, lesson_files: lessonDocs.map((doc) => doc.filename) });
+      createJob(jobId, "scenario3", { scope_sequence: scopeDoc.filename, standards_reference: standardsDoc.filename, lesson_files: lessonDocs.map((doc) => doc.filename) }, "manual");
       await agent.startManualRun("scenario3", jobId, { scope_sequence: scopeDoc, standards_reference: standardsDoc, lesson_files: lessonDocs });
       res.status(201).json({ job_id: jobId, status: "paused" });
     } catch (err) { res.status(502).json({ error: err instanceof Error ? err.message : "Failed to start manual job" }); }

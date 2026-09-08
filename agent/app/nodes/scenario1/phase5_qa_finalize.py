@@ -26,12 +26,9 @@ OUT_OF_SCOPE_NOTE = (
 
 def qa_and_finalize(state: ScenarioState1) -> dict:
     finding = ask_structured(
-        "Review the full analysis below for accuracy, consistency, traceability, and "
-        "completeness before it's finalized: do the classifications match their stated rationale, "
-        "are the recommended remediations actually traceable to the gaps and evidence review, and "
-        "is any SC requirement missing from the chain end to end? List concrete findings, list "
-        "only genuine issues in issues_to_resolve, and set passed to true only if that list is "
-        "empty.\n\n"
+        "Perform a concise final QA check. Verify that classifications, gaps, and remediation "
+        "recommendations are consistent and traceable. Return only concrete findings, genuine "
+        "issues_to_resolve, and passed=true only when no issues remain.\n\n"
         f"Crosswalk:\n{json.dumps(state['crosswalk'], indent=2)}\n\n"
         f"SC deltas:\n{json.dumps(state['sc_deltas'], indent=2)}\n\n"
         f"Grade-level depth validation:\n"
@@ -39,6 +36,7 @@ def qa_and_finalize(state: ScenarioState1) -> dict:
         f"Classification:\n{json.dumps(state['classification'], indent=2)}\n\n"
         f"Gap analysis & remediation:\n{json.dumps(state['confirmed_gap_analysis'], indent=2)}",
         FinalQAReviewModel,
+        max_tokens=1400,
     )
     return {
         "final_qa_review": finding.model_dump(),
@@ -55,13 +53,14 @@ def produce_final_package(state: ScenarioState1) -> dict:
     gap = sum(1 for c in classification if c["classification"] == "Gap")
 
     summary = ask_structured(
-        "Summarize the outcome of this NGSS-to-South-Carolina alignment review for Discovery "
-        "Education's review: a short summary and overall notes.\n\n"
+        "Write a concise final summary and overall notes for this NGSS-to-South-Carolina "
+        "alignment review. Do not repeat the source data.\n\n"
         f"Classification counts -- Strong: {strong}, Partial: {partial}, Gap: {gap}, "
         f"Total: {len(classification)}\n\n"
         f"Gap analysis & remediation:\n{json.dumps(state['confirmed_gap_analysis'], indent=2)}\n\n"
         f"Final QA review:\n{json.dumps(state['final_qa_review'], indent=2)}",
         FinalPackage1,
+        max_tokens=900,
     )
     final_package = {
         **summary.model_dump(),

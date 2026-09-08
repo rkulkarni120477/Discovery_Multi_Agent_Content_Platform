@@ -113,10 +113,14 @@ export function ManualJobDetail({ scenario }: { scenario: "scenario1" | "scenari
       <div className="grid grid-cols-1 gap-10 md:grid-cols-[16rem_1fr]">
         <PhaseTimeline phases={status.phases} phaseStepRanges={ranges} currentPhase={status.phase} currentStep={status.step} status={status.status} />
         <div>
-          {status.status === "paused" && status.interrupt_type === "manual_approval" && (
+          {(status.status === "paused" || status.status === "error") && status.interrupt_type === "manual_approval" && (
             <div className="mb-5 border border-orange-300 bg-orange-50 p-5 dark:border-orange-800 dark:bg-orange-950/40">
-              <h2 className="text-lg font-semibold">Approve Step {status.step}</h2>
-              <p className="mt-2 text-sm text-neutral-700 dark:text-neutral-200">Review the step details above, then approve this step to execute it.</p>
+              <h2 className="text-lg font-semibold">{status.status === "error" ? "Retry" : "Approve"} Step {status.step}</h2>
+              <p className="mt-2 text-sm text-neutral-700 dark:text-neutral-200">
+                {status.status === "error"
+                  ? "The step failed while executing. Resolve the reported service error, then retry this step."
+                  : "Review the step details above, then approve this step to execute it."}
+              </p>
               <div className="mt-4 flex flex-wrap items-center gap-4">
                 <button
                   type="button"
@@ -124,7 +128,7 @@ export function ManualJobDetail({ scenario }: { scenario: "scenario1" | "scenari
                   onClick={approve}
                   className="bg-orange-600 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                  Approve Step
+                  {status.status === "error" ? "Retry Step" : "Approve Step"}
                 </button>
                 {approvedStep === status.step && (
                   <div className="flex min-w-64 items-center gap-3" role="status" aria-live="polite">

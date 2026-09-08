@@ -65,6 +65,11 @@ def get_last_error(run_id: str) -> str | None:
         return _errors.get(run_id)
 
 
+def clear_error(run_id: str) -> None:
+    with _lock:
+        _errors.pop(run_id, None)
+
+
 def is_in_flight(run_id: str) -> bool:
     with _lock:
         return run_id in _in_flight

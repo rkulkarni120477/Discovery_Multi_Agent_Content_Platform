@@ -50,8 +50,16 @@ def ask_text(prompt: str, *, system: str | None = None, max_tokens: int | None =
     return response.content if isinstance(response.content, str) else str(response.content)
 
 
-def ask_structured(prompt: str, schema: Type[T], *, system: str | None = None) -> T:
+def ask_structured(
+    prompt: str,
+    schema: Type[T],
+    *,
+    system: str | None = None,
+    max_tokens: int | None = None,
+) -> T:
     model = _model().with_structured_output(schema)
+    if max_tokens:
+        model = model.bind(max_tokens=max_tokens)
     messages = [
         SystemMessage(content=system or SYSTEM_PREAMBLE),
         HumanMessage(content=prompt),

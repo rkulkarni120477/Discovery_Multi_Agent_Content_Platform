@@ -1,4 +1,5 @@
 export type ScenarioKey = "scenario1" | "scenario2" | "scenario3";
+export type JobExecutionMode = "automated" | "manual";
 
 export const SCENARIO1_DOCUMENT_KEYS = [
   "existing_product_content",
@@ -21,6 +22,7 @@ export interface ParsedDocument {
 export interface JobRecord {
   id: string;
   scenario: ScenarioKey;
+  execution_mode: JobExecutionMode;
   status: string;
   phase: string | null;
   step: number | null;

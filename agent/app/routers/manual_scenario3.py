@@ -33,7 +33,8 @@ def get_run(run_id: str): return status(run_id)
 @router.post("/runs/{run_id}/approve", response_model=ManualRunStatusResponse)
 def approve(run_id: str):
     current = status(run_id)
-    if current.status != "paused" or current.interrupt_type != "manual_approval": raise HTTPException(status_code=409, detail="manual run is not waiting for step approval")
+    if current.status not in {"paused", "error"} or current.interrupt_type != "manual_approval": raise HTTPException(status_code=409, detail="manual run is not waiting for step approval")
+    manual_store.clear_error(run_id)
     manual_store.approve_step(get_compiled_graph(), run_id)
     return status(run_id)
 

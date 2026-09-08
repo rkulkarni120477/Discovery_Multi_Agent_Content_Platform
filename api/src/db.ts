@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { JobRecord, ScenarioKey } from "./types";
+import type { JobExecutionMode, JobRecord, ScenarioKey } from "./types";
 
 // A flat JSON file is enough here: this table only stores lightweight job bookkeeping (id,
 // status, filenames, timestamps). The actual workflow state of record lives in the agent
@@ -27,6 +27,10 @@ function readAll(): Record<string, JobRecord> {
       job.scenario = "scenario2";
       migrated = true;
     }
+    if (!job.execution_mode) {
+      job.execution_mode = "automated";
+      migrated = true;
+    }
   }
   if (migrated) writeAll(jobs);
 
@@ -37,11 +41,17 @@ function writeAll(jobs: Record<string, JobRecord>): void {
   fs.writeFileSync(dbPath, JSON.stringify(jobs, null, 2), "utf-8");
 }
 
-export function createJob(id: string, scenario: ScenarioKey, filenames: Record<string, unknown>): JobRecord {
+export function createJob(
+  id: string,
+  scenario: ScenarioKey,
+  filenames: Record<string, unknown>,
+  execution_mode: JobExecutionMode = "automated"
+): JobRecord {
   const now = new Date().toISOString();
   const record: JobRecord = {
     id,
     scenario,
+    execution_mode,
     status: "running",
     phase: null,
     step: null,
