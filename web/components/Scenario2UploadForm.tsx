@@ -2,18 +2,16 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { createScenario2Job } from "@/lib/api";
+import { createManualScenario2Job, createScenario2Job } from "@/lib/api";
 
 const FIELDS = [
-  { key: "lesson_1", label: "Lesson 1 (candidate Explore lesson)" },
-  { key: "lesson_2", label: "Lesson 2 (candidate Explore lesson)" },
-  { key: "lesson_3", label: "Lesson 3 (candidate Explore lesson)" },
+  { key: "lesson", label: "Lesson (candidate Explore lesson)" },
   { key: "literacy_strategy", label: "Literacy Strategy resource" },
 ] as const;
 
 type FieldKey = (typeof FIELDS)[number]["key"];
 
-export function Scenario2UploadForm() {
+export function Scenario2UploadForm({ manual = false }: { manual?: boolean }) {
   const router = useRouter();
   const [files, setFiles] = useState<Partial<Record<FieldKey, File>>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -27,8 +25,10 @@ export function Scenario2UploadForm() {
     setSubmitting(true);
     setError(null);
     try {
-      const { job_id } = await createScenario2Job(files as Record<FieldKey, File>);
-      router.push(`/jobs/${job_id}`);
+      const { job_id } = manual
+        ? await createManualScenario2Job(files as Record<FieldKey, File>)
+        : await createScenario2Job(files as Record<FieldKey, File>);
+      router.push(manual ? `/Manual/Scenario2/jobs/${job_id}` : `/jobs/${job_id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to start job");
       setSubmitting(false);
@@ -71,7 +71,7 @@ export function Scenario2UploadForm() {
                    font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90
                    transition-opacity w-fit"
       >
-        {submitting ? "Starting run…" : "Start Scenario 2 run"}
+        {submitting ? "Starting run…" : manual ? "Start manual Scenario 2 workflow" : "Start Scenario 2 run"}
       </button>
     </form>
   );

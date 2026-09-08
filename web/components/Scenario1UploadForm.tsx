@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { createScenario1Job } from "@/lib/api";
+import { createManualScenario1Job, createScenario1Job } from "@/lib/api";
 
 const FIELDS = [
   {
@@ -14,7 +14,7 @@ const FIELDS = [
 
 type FieldKey = (typeof FIELDS)[number]["key"];
 
-export function Scenario1UploadForm() {
+export function Scenario1UploadForm({ manual = false }: { manual?: boolean }) {
   const router = useRouter();
   const [files, setFiles] = useState<Partial<Record<FieldKey, File>>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -28,8 +28,10 @@ export function Scenario1UploadForm() {
     setSubmitting(true);
     setError(null);
     try {
-      const { job_id } = await createScenario1Job(files as Record<FieldKey, File>);
-      router.push(`/jobs/${job_id}`);
+      const { job_id } = manual
+        ? await createManualScenario1Job(files as Record<FieldKey, File>)
+        : await createScenario1Job(files as Record<FieldKey, File>);
+      router.push(manual ? `/Manual/Scenario1/jobs/${job_id}` : `/jobs/${job_id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to start job");
       setSubmitting(false);
@@ -72,7 +74,7 @@ export function Scenario1UploadForm() {
                    font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90
                    transition-opacity w-fit"
       >
-        {submitting ? "Starting run…" : "Start Scenario 1 run"}
+        {submitting ? "Starting run…" : manual ? "Start manual Scenario 1 workflow" : "Start Scenario 1 run"}
       </button>
     </form>
   );

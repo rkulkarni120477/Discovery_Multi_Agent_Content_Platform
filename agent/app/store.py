@@ -14,11 +14,13 @@ import traceback
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
-from langgraph.types import Command
+from langgraph.types import Command, interrupt
 
 _executor = ThreadPoolExecutor(max_workers=4)
 _lock = threading.Lock()
 _run_errors: dict[str, str] = {}
+_pause_condition = threading.Condition()
+_paused_runs: set[str] = set()
 
 # LangGraph's own ``Command(resume=...)`` treats a literal ``None`` as "there is no resume value
 # at all" (see pregel/_loop.py's ``_first``) -- passing None there hits an unrelated internal
@@ -28,6 +30,7 @@ _run_errors: dict[str, str] = {}
 # doing a truthiness check, so a real override that happens to be falsy (an empty list of edits,
 # say) is never mistaken for "no override".
 NO_OVERRIDE = "__accept_ai_recommendation__"
+MANUAL_APPROVE = "__approve_manual_step__"
 
 
 def _config(run_id: str) -> dict:
@@ -45,11 +48,52 @@ def _invoke(graph: Any, run_id: str, payload: Any) -> None:
 
 
 def start_run(graph: Any, run_id: str, initial_state: dict) -> None:
+    with _pause_condition:
+        _paused_runs.discard(run_id)
     _executor.submit(_invoke, graph, run_id, initial_state)
 
 
 def resume_run(graph: Any, run_id: str, resume_value: Any) -> None:
     _executor.submit(_invoke, graph, run_id, Command(resume=resume_value))
+
+
+def pause_run(run_id: str) -> None:
+    with _pause_condition:
+        _paused_runs.add(run_id)
+
+
+def resume_workflow(run_id: str) -> None:
+    with _pause_condition:
+        _paused_runs.discard(run_id)
+        _pause_condition.notify_all()
+
+
+def is_workflow_paused(run_id: str) -> bool:
+    with _pause_condition:
+        return run_id in _paused_runs
+
+
+def workflow_step(fn: Any) -> Any:
+    """Run automatically, or pause after each node for manual approval."""
+
+    def wrapped(state: dict) -> Any:
+        run_id = state.get("job_id")
+        if run_id:
+            with _pause_condition:
+                while run_id in _paused_runs:
+                    _pause_condition.wait()
+        result = fn(state)
+        if not state.get("manual_execution"):
+            return result
+        return _manual_approval(result, run_id)
+
+    def _manual_approval(result: Any, run_id: str | None) -> Any:
+        decision = interrupt({"type": "manual_step", "step": result.get("step") if isinstance(result, dict) else None})
+        if decision == MANUAL_APPROVE:
+            return result
+        return result
+
+    return wrapped
 
 
 def get_last_error(run_id: str) -> str | None:

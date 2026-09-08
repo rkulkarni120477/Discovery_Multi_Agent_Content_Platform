@@ -78,6 +78,30 @@ def resume_run(run_id: str, request: ResumeRequest) -> RunStatusResponse:
     return _status(run_id)
 
 
+@router.post("/runs/{run_id}/pause", response_model=RunStatusResponse)
+def pause_workflow(run_id: str) -> RunStatusResponse:
+    current = _status(run_id)
+    if current.status in {"complete", "error"}:
+        raise HTTPException(status_code=409, detail=f"run is '{current.status}'")
+    store.pause_run(run_id)
+    return _status(run_id)
+
+
+@router.post("/runs/{run_id}/resume-workflow", response_model=RunStatusResponse)
+def resume_workflow(run_id: str) -> RunStatusResponse:
+    store.resume_workflow(run_id)
+    return _status(run_id)
+
+
+@router.post("/runs/{run_id}/next", response_model=RunStatusResponse)
+def next_step(run_id: str) -> RunStatusResponse:
+    current = _status(run_id)
+    if current.status != "paused" or current.interrupt_type != "manual_step":
+        raise HTTPException(status_code=409, detail="run is not waiting for a manual step")
+    store.resume_run(get_compiled_graph(), run_id, store.MANUAL_ADVANCE)
+    return _status(run_id)
+
+
 @router.get("/runs/{run_id}/result")
 def get_result(run_id: str) -> dict:
     status = _status(run_id)

@@ -6,6 +6,7 @@ import swaggerUi from "swagger-ui-express";
 import { jobsRouter } from "./routes/jobs";
 import { scenario1JobsRouter } from "./routes/scenario1Jobs";
 import { scenario3JobsRouter } from "./routes/scenario3Jobs";
+import { manualJobsRouter } from "./routes/manualJobs";
 import { swaggerSpec } from "./swagger";
 
 const app = express();
@@ -20,6 +21,7 @@ app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/api/jobs", jobsRouter);
 app.use("/api/scenario1/jobs", scenario1JobsRouter);
 app.use("/api/scenario3/jobs", scenario3JobsRouter);
+app.use("/api/manual", manualJobsRouter);
 
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   // eslint-disable-next-line no-console

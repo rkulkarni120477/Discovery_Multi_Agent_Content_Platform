@@ -5,20 +5,24 @@ import Link from "next/link";
 import { useState } from "react";
 
 const SCENARIOS = [
-  { value: "", label: "Select a scenario…" },
-  { value: "/scenario1", label: "Scenario 1 — NGSS-to-State Standards Crosswalk" },
-  { value: "/scenario2", label: "Scenario 2 — Literacy Strategy Integration" },
-  { value: "/scenario3", label: "Scenario 3 — State Standards Alignment" },
+  { value: "", scenario: "", label: "Select a scenario…" },
+  { value: "/scenario1", scenario: "Scenario1", label: "Scenario 1 — NGSS-to-State Standards Crosswalk" },
+  { value: "/scenario2", scenario: "Scenario2", label: "Scenario 2 — Literacy Strategy Integration" },
+  { value: "/scenario3", scenario: "Scenario3", label: "Scenario 3 — State Standards Alignment" },
 ] as const;
 
 export default function Home() {
   const router = useRouter();
   const [value, setValue] = useState("");
+  const [manualExecution, setManualExecution] = useState(false);
 
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const next = e.target.value;
     setValue(next);
-    if (next) router.push(next);
+    const selectedScenario = SCENARIOS.find((scenario) => scenario.value === next)?.scenario;
+    if (selectedScenario) {
+      router.push(manualExecution ? `/Manual/${selectedScenario}` : next);
+    }
   }
 
   return (
@@ -34,6 +38,16 @@ export default function Home() {
         a dedicated LangGraph pipeline and pauses for your review at the judgment calls the
         workflow can't safely automate on its own.
       </p>
+
+      <label className="mb-5 flex w-fit items-center gap-2 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+        <input
+          type="checkbox"
+          checked={manualExecution}
+          onChange={(e) => setManualExecution(e.target.checked)}
+          className="h-4 w-4 accent-orange-600"
+        />
+        Manual Execution
+      </label>
 
       <label className="flex flex-col gap-1.5 max-w-md">
         <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Scenario</span>

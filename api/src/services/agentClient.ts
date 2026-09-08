@@ -38,7 +38,7 @@ export function startScenario1Run(
 
 export function startScenario2Run(
   jobId: string,
-  documents: Record<"lesson_1" | "lesson_2" | "lesson_3" | "literacy_strategy", ParsedDocument>
+  documents: Record<"lesson" | "literacy_strategy", ParsedDocument>
 ): Promise<{ run_id: string; status: string }> {
   return agentFetch("/scenario2/runs", {
     method: "POST",
@@ -71,6 +71,40 @@ export function resumeRun(scenario: ScenarioKey, runId: string, value: unknown):
   });
 }
 
+export function pauseRun(scenario: ScenarioKey, runId: string): Promise<AgentRunStatus> {
+  return agentFetch(`/${scenario}/runs/${encodeURIComponent(runId)}/pause`, { method: "POST" });
+}
+
+export function resumeWorkflow(scenario: ScenarioKey, runId: string): Promise<AgentRunStatus> {
+  return agentFetch(`/${scenario}/runs/${encodeURIComponent(runId)}/resume-workflow`, { method: "POST" });
+}
+
 export function getRunResult(scenario: ScenarioKey, runId: string): Promise<Record<string, unknown>> {
   return agentFetch(`/${scenario}/runs/${encodeURIComponent(runId)}/result`);
+}
+
+export function startManualRun(scenario: ScenarioKey, runId: string, documents: Record<string, unknown>) {
+  return agentFetch(`/manual/${scenario}/runs`, {
+    method: "POST",
+    body: JSON.stringify({ job_id: runId, ...documents }),
+  });
+}
+
+export function getManualRunStatus(scenario: ScenarioKey, runId: string): Promise<AgentRunStatus> {
+  return agentFetch(`/manual/${scenario}/runs/${encodeURIComponent(runId)}`);
+}
+
+export function approveManualStep(scenario: ScenarioKey, runId: string): Promise<AgentRunStatus> {
+  return agentFetch(`/manual/${scenario}/runs/${encodeURIComponent(runId)}/approve`, { method: "POST" });
+}
+
+export function resumeManualCheckpoint(scenario: ScenarioKey, runId: string, value: unknown): Promise<AgentRunStatus> {
+  return agentFetch(`/manual/${scenario}/runs/${encodeURIComponent(runId)}/resume`, {
+    method: "POST",
+    body: JSON.stringify({ value }),
+  });
+}
+
+export function getManualRunResult(scenario: ScenarioKey, runId: string): Promise<Record<string, unknown>> {
+  return agentFetch(`/manual/${scenario}/runs/${encodeURIComponent(runId)}/result`);
 }

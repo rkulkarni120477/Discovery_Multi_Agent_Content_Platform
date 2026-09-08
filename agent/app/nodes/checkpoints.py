@@ -20,9 +20,12 @@ def _resolve_lesson_key(state: ScenarioState, lesson_id: str) -> str:
     if lesson_id in state["documents"]:
         return lesson_id
 
+    if "lesson" in state["documents"]:
+        return "lesson"
+
     normalized_id = Path(lesson_id).stem.casefold()
     filename_matches: list[str] = []
-    for document_key in ("lesson_1", "lesson_2", "lesson_3"):
+    for document_key in ("lesson",):
         document = state["documents"].get(document_key)
         if not document:
             continue

@@ -12,6 +12,7 @@ import sqlite3
 from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.graph import END, START, StateGraph
 
+from app import store
 from app.nodes.scenario3 import (
     checkpoints,
     phase1_gather,
@@ -27,36 +28,39 @@ from app.state_scenario3 import ScenarioState3
 def build_graph() -> StateGraph:
     graph = StateGraph(ScenarioState3)
 
+    def add_node(name: str, fn: object) -> None:
+        graph.add_node(name, store.workflow_step(fn))
+
     # Phase 1 -- Gather & Organize
-    graph.add_node("identify_grade_level", phase1_gather.identify_grade_level)
-    graph.add_node("acquire_standards", phase1_gather.acquire_standards)
-    graph.add_node("extract_c3_alignment", phase1_gather.extract_c3_alignment)
-    graph.add_node("build_crosswalk", phase1_gather.build_crosswalk)
-    graph.add_node("review_crosswalk", checkpoints.review_crosswalk)
+    add_node("identify_grade_level", phase1_gather.identify_grade_level)
+    add_node("acquire_standards", phase1_gather.acquire_standards)
+    add_node("extract_c3_alignment", phase1_gather.extract_c3_alignment)
+    add_node("build_crosswalk", phase1_gather.build_crosswalk)
+    add_node("review_crosswalk", checkpoints.review_crosswalk)
 
     # Phase 2 -- Read & Map
-    graph.add_node("summarize_lessons", phase2_map.summarize_lessons)
-    graph.add_node("map_to_standards", phase2_map.map_to_standards)
-    graph.add_node("review_alignment_map", checkpoints.review_alignment_map)
+    add_node("summarize_lessons", phase2_map.summarize_lessons)
+    add_node("map_to_standards", phase2_map.map_to_standards)
+    add_node("review_alignment_map", checkpoints.review_alignment_map)
 
     # Phase 3 -- Gap Analysis
-    graph.add_node("compile_gap_list", phase3_gap.compile_gap_list)
-    graph.add_node("identify_surplus", phase3_gap.identify_surplus)
+    add_node("compile_gap_list", phase3_gap.compile_gap_list)
+    add_node("identify_surplus", phase3_gap.identify_surplus)
 
     # Phase 4 -- Revision Planning
-    graph.add_node("plan_and_place_revisions", phase4_revision.plan_and_place_revisions)
-    graph.add_node("review_revision_plan", checkpoints.review_revision_plan)
+    add_node("plan_and_place_revisions", phase4_revision.plan_and_place_revisions)
+    add_node("review_revision_plan", checkpoints.review_revision_plan)
 
     # Phase 5 -- Content Drafting
-    graph.add_node("draft_content", phase5_content.draft_content)
-    graph.add_node("write_rationale", phase5_content.write_rationale)
-    graph.add_node("update_scope_sequence", phase5_content.update_scope_sequence)
+    add_node("draft_content", phase5_content.draft_content)
+    add_node("write_rationale", phase5_content.write_rationale)
+    add_node("update_scope_sequence", phase5_content.update_scope_sequence)
 
     # Phase 6 -- Quality Assurance
-    graph.add_node("coherence_review", phase6_qa.coherence_review)
-    graph.add_node("final_coverage_verification", phase6_qa.final_coverage_verification)
-    graph.add_node("editorial_review", phase6_qa.editorial_review)
-    graph.add_node("produce_final_package", phase6_qa.produce_final_package)
+    add_node("coherence_review", phase6_qa.coherence_review)
+    add_node("final_coverage_verification", phase6_qa.final_coverage_verification)
+    add_node("editorial_review", phase6_qa.editorial_review)
+    add_node("produce_final_package", phase6_qa.produce_final_package)
 
     # Wiring
     graph.add_edge(START, "identify_grade_level")

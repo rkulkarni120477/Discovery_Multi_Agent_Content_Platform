@@ -5,19 +5,20 @@ import { createJob, deleteJob, getJob, listJobs, updateJobStatus } from "../db";
 import * as agent from "../services/agentClient";
 import {
   buildFinalPackageDocx,
+  buildFinalPackageXlsx,
   buildScenario1FinalPackageDocx,
   buildScenario3FinalPackageDocx,
 } from "../services/docExport";
 import { extractText } from "../services/fileParser";
 import type {
-  DocumentKey,
   FinalPackage,
   JobStatusResponse,
   ParsedDocument,
+  Scenario2DocumentKey,
   Scenario1FinalPackage,
   Scenario3FinalPackage,
 } from "../types";
-import { DOCUMENT_KEYS } from "../types";
+import { SCENARIO2_DOCUMENT_KEYS } from "../types";
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
 
@@ -29,7 +30,7 @@ export const jobsRouter = Router();
  *   post:
  *     summary: Start a Scenario 2 run
  *     description: >
- *       Uploads the three candidate Explore lessons plus the literacy-strategy resource
+ *       Uploads one Explore lesson plus the literacy-strategy resource
  *       (.docx, .pdf, .txt, or .md), extracts their text, and starts a run on the agent service.
  *     tags: [jobs]
  *     requestBody:
@@ -38,11 +39,9 @@ export const jobsRouter = Router();
  *         multipart/form-data:
  *           schema:
  *             type: object
- *             required: [lesson_1, lesson_2, lesson_3, literacy_strategy]
+ *             required: [lesson, literacy_strategy]
  *             properties:
- *               lesson_1: { type: string, format: binary }
- *               lesson_2: { type: string, format: binary }
- *               lesson_3: { type: string, format: binary }
+ *               lesson: { type: string, format: binary }
  *               literacy_strategy: { type: string, format: binary }
  *     responses:
  *       201:
@@ -63,19 +62,19 @@ export const jobsRouter = Router();
  */
 jobsRouter.post(
   "/",
-  upload.fields(DOCUMENT_KEYS.map((key) => ({ name: key, maxCount: 1 }))),
+  upload.fields(SCENARIO2_DOCUMENT_KEYS.map((key) => ({ name: key, maxCount: 1 }))),
   async (req, res) => {
-    const files = req.files as Record<DocumentKey, Express.Multer.File[]> | undefined;
-    const missing = DOCUMENT_KEYS.filter((key) => !files?.[key]?.[0]);
+    const files = req.files as Record<Scenario2DocumentKey, Express.Multer.File[]> | undefined;
+    const missing = SCENARIO2_DOCUMENT_KEYS.filter((key) => !files?.[key]?.[0]);
     if (missing.length > 0) {
       res.status(400).json({ error: `Missing required file(s): ${missing.join(", ")}` });
       return;
     }
 
     try {
-      const documents = {} as Record<DocumentKey, ParsedDocument>;
+      const documents = {} as Record<Scenario2DocumentKey, ParsedDocument>;
       const filenames: Record<string, string> = {};
-      for (const key of DOCUMENT_KEYS) {
+      for (const key of SCENARIO2_DOCUMENT_KEYS) {
         const file = files![key][0];
         const text = await extractText(file.originalname, file.buffer);
         documents[key] = { filename: file.originalname, text };
@@ -230,6 +229,36 @@ jobsRouter.post("/:id/resume", async (req, res) => {
   }
 });
 
+jobsRouter.post("/:id/pause", async (req, res) => {
+  const job = getJob(req.params.id);
+  if (!job) {
+    res.status(404).json({ error: "job not found" });
+    return;
+  }
+  try {
+    const status = await agent.pauseRun(job.scenario, req.params.id);
+    updateJobStatus(job.id, status.status, status.phase, status.step);
+    res.json(status);
+  } catch (err) {
+    res.status(409).json({ error: err instanceof Error ? err.message : "Failed to pause workflow" });
+  }
+});
+
+jobsRouter.post("/:id/resume-workflow", async (req, res) => {
+  const job = getJob(req.params.id);
+  if (!job) {
+    res.status(404).json({ error: "job not found" });
+    return;
+  }
+  try {
+    const status = await agent.resumeWorkflow(job.scenario, req.params.id);
+    updateJobStatus(job.id, status.status, status.phase, status.step);
+    res.json(status);
+  } catch (err) {
+    res.status(409).json({ error: err instanceof Error ? err.message : "Failed to resume workflow" });
+  }
+});
+
 /**
  * @openapi
  * /api/jobs/{id}/result:
@@ -321,6 +350,33 @@ jobsRouter.get("/:id/result.docx", async (req, res) => {
     res.send(buffer);
   } catch (err) {
     res.status(502).json({ error: err instanceof Error ? err.message : "Failed to build docx" });
+  }
+});
+
+/**
+ * @openapi
+ * /api/jobs/{id}/result.xlsx:
+ *   get:
+ *     summary: Download the final revision package as an Excel workbook
+ *     description: Includes the complete JSON result and readable worksheets for structured sections.
+ *     tags: [jobs]
+ */
+jobsRouter.get("/:id/result.xlsx", async (req, res) => {
+  const job = getJob(req.params.id);
+  if (!job) {
+    res.status(404).json({ error: "job not found" });
+    return;
+  }
+  try {
+    const result = await agent.getRunResult(job.scenario, req.params.id);
+    const buffer = await buildFinalPackageXlsx(
+      result as unknown as FinalPackage | Scenario1FinalPackage | Scenario3FinalPackage
+    );
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.setHeader("Content-Disposition", `attachment; filename="${job.scenario}-${job.id}.xlsx"`);
+    res.send(buffer);
+  } catch (err) {
+    res.status(502).json({ error: err instanceof Error ? err.message : "Failed to build xlsx" });
   }
 });
 

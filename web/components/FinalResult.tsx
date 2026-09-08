@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { getResultDocxUrl } from "@/lib/api";
+import { getResultDocxUrl, getResultXlsxUrl } from "@/lib/api";
 import type { FinalPackage } from "@/lib/types";
 import { ReportFrame } from "@/components/ReportFrame";
 
@@ -46,12 +46,20 @@ export function FinalResult({ jobId, pkg }: { jobId: string; pkg: FinalPackage }
         {tab === "Change Log" && pkg.connected_updates.join("\n")}
       </pre>
 
-      <a
-        href={getResultDocxUrl(jobId)}
-        className="mt-5 inline-flex w-fit bg-orange-600 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-700"
-      >
-        Download final package (.docx)
-      </a>
+      <div className="mt-5 flex flex-wrap gap-3">
+        <a
+          href={getResultDocxUrl(jobId)}
+          className="inline-flex w-fit bg-orange-600 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-700"
+        >
+          Download final package (.docx)
+        </a>
+        <a
+          href={getResultXlsxUrl(jobId)}
+          className="inline-flex w-fit border border-orange-600 px-4 py-2 text-sm font-semibold text-orange-700 hover:bg-orange-50 dark:text-orange-400 dark:hover:bg-orange-950"
+        >
+          Download JSON workbook (.xlsx)
+        </a>
+      </div>
     </ReportFrame>
   );
 }

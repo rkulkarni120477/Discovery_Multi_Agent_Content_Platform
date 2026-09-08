@@ -136,7 +136,7 @@ const STEP_DESCRIPTIONS: Record<ScenarioKey, Record<number, string>> = {
     11: "Run quality checks on the full analysis and prepare final deliverables.",
   },
   scenario2: {
-    1: "Organize and prepare the three candidate lessons and literacy strategy resource for analysis.",
+    1: "Organize and prepare the lesson and literacy strategy resource for analysis.",
     2: "Extract key metadata from each lesson (objectives, duration, grade level, topic).",
     3: "Parse the literacy strategy resource to identify strategies and their characteristics.",
     4: "Create concise summaries of each candidate lesson's content and learning objectives.",
@@ -204,6 +204,17 @@ function stepDescription(scenario: ScenarioKey, step: number | null, status: Run
   if (status === "error") return "The workflow encountered an error and stopped.";
   const description = step ? STEP_DESCRIPTIONS[scenario]?.[step] : undefined;
   return description || "Preparing the workflow for execution.";
+}
+
+function stepDetailsTitle(
+  scenario: ScenarioKey,
+  step: number | null,
+  status: RunStatus,
+  totalSteps: number
+): string {
+  const displayedStep = step ?? (status === "complete" ? totalSteps : 1);
+  const name = STEP_NAMES[scenario]?.[displayedStep];
+  return name ? `Step ${displayedStep}: ${name}` : `Step ${displayedStep}`;
 }
 
 export function RunProgressBar({
@@ -293,7 +304,9 @@ export function RunProgressBar({
           </div>
           <div className="w-64 flex-shrink-0">
             <div className="rounded-lg bg-green-50 p-3 dark:bg-green-950">
-              <p className="text-xs font-medium text-green-900 dark:text-green-100">Step Details</p>
+              <p className="text-xs font-semibold text-green-900 dark:text-green-100">
+                {stepDetailsTitle(scenario, step, status, totalSteps)}
+              </p>
               <p className="mt-2 text-xs leading-relaxed text-green-800 dark:text-green-200">
                 {stepDescription(scenario, step, status)}
               </p>

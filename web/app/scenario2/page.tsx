@@ -16,9 +16,8 @@ export default function Scenario2Page() {
         </div>
       </div>
       <p className="text-neutral-600 dark:text-neutral-400 mb-8 max-w-2xl">
-        Upload the three candidate Explore lessons and a literacy strategy resource. A multi-agent
-        LangGraph pipeline will screen the strongest lesson/strategy combination, deeply analyze the
-        selected lesson, plan and draft a revision, run five parallel QA passes, and produce a final
+        Upload one Explore lesson and a literacy strategy resource. A multi-agent LangGraph pipeline
+        will analyze the lesson, plan and draft a revision, run five parallel QA passes, and produce a final
         revised lesson with full rationale — pausing for your review at the three judgment calls the
         workflow can&apos;t safely automate.
       </p>

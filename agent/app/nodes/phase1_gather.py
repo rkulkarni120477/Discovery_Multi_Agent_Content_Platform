@@ -12,14 +12,15 @@ from app.llm import ask_structured, ask_text
 from app.schemas import LessonMetadataList, StrategyInventory
 from app.state import ScenarioState
 
-LESSON_IDS = ["lesson_1", "lesson_2", "lesson_3"]
+def lesson_ids(state: ScenarioState) -> list[str]:
+    return ["lesson"] if "lesson" in state["documents"] else []
 
 
 def intake(state: ScenarioState) -> dict:
     docs = state["documents"]
     listing = "\n".join(
         f"- {docs[key]['filename']} ({key}): {len(docs[key]['text'])} characters"
-        for key in [*LESSON_IDS, "literacy_strategy"]
+        for key in [*lesson_ids(state), "literacy_strategy"]
         if key in docs
     )
     notes = ask_text(
@@ -41,14 +42,13 @@ def catalog_metadata(state: ScenarioState) -> dict:
     docs = state["documents"]
     lesson_blocks = "\n\n".join(
         f"=== {lesson_id} ({docs[lesson_id]['filename']}) ===\n{docs[lesson_id]['text']}"
-        for lesson_id in LESSON_IDS
-        if lesson_id in docs
+        for lesson_id in lesson_ids(state)
     )
     result = ask_structured(
         "For each of the following candidate science lessons, extract: grade/band, title, lesson "
         "type, 5E phase, timing, learning objective, Performance Expectation(s), DCI, focal SEP, "
         "focal CCC, supporting practices, major activities, assessment opportunities, and existing "
-        "literacy supports. Use the given lesson_id (lesson_1/lesson_2/lesson_3) for each entry.\n\n"
+        "literacy supports. Use the lesson_id 'lesson' for the uploaded lesson.\n\n"
         f"{lesson_blocks}",
         LessonMetadataList,
     )

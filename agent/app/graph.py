@@ -10,6 +10,7 @@ import sqlite3
 from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.graph import END, START, StateGraph
 
+from app import store
 from app.nodes import (
     checkpoints,
     phase1_gather,
@@ -34,46 +35,49 @@ QA_NODES = [
 def build_graph() -> StateGraph:
     graph = StateGraph(ScenarioState)
 
+    def add_node(name: str, fn: object) -> None:
+        graph.add_node(name, store.workflow_step(fn))
+
     # Phase 1 — Gather & Organize
-    graph.add_node("intake", phase1_gather.intake)
-    graph.add_node("catalog_metadata", phase1_gather.catalog_metadata)
-    graph.add_node("extract_strategies", phase1_gather.extract_strategies)
+    add_node("intake", phase1_gather.intake)
+    add_node("catalog_metadata", phase1_gather.catalog_metadata)
+    add_node("extract_strategies", phase1_gather.extract_strategies)
 
     # Phase 2 — Understand & Screen
-    graph.add_node("summarize_lessons", phase2_screen.summarize_lessons)
-    graph.add_node("analyze_strategies", phase2_screen.analyze_strategies)
-    graph.add_node("screen_combinations", phase2_screen.screen_combinations)
-    graph.add_node("select_combination", checkpoints.select_combination)
+    add_node("summarize_lessons", phase2_screen.summarize_lessons)
+    add_node("analyze_strategies", phase2_screen.analyze_strategies)
+    add_node("screen_combinations", phase2_screen.screen_combinations)
+    add_node("select_combination", checkpoints.select_combination)
 
     # Phase 3 — Deep Instructional Analysis
-    graph.add_node("deep_review", phase3_deep_analysis.deep_review)
-    graph.add_node("map_literacy_demands", phase3_deep_analysis.map_literacy_demands)
-    graph.add_node("find_integration_points", phase3_deep_analysis.find_integration_points)
-    graph.add_node("select_integration_point", checkpoints.select_integration_point)
+    add_node("deep_review", phase3_deep_analysis.deep_review)
+    add_node("map_literacy_demands", phase3_deep_analysis.map_literacy_demands)
+    add_node("find_integration_points", phase3_deep_analysis.find_integration_points)
+    add_node("select_integration_point", checkpoints.select_integration_point)
 
     # Phase 4 — Revision Planning
-    graph.add_node("plan_revision", phase4_revision_planning.plan_revision)
+    add_node("plan_revision", phase4_revision_planning.plan_revision)
 
     # Phase 5 — Content Development
-    graph.add_node("draft_student_content", phase5_content_development.draft_student_content)
-    graph.add_node("draft_teacher_content", phase5_content_development.draft_teacher_content)
-    graph.add_node("update_connected_components", phase5_content_development.update_connected_components)
-    graph.add_node("write_rationale", phase5_content_development.write_rationale)
+    add_node("draft_student_content", phase5_content_development.draft_student_content)
+    add_node("draft_teacher_content", phase5_content_development.draft_teacher_content)
+    add_node("update_connected_components", phase5_content_development.update_connected_components)
+    add_node("write_rationale", phase5_content_development.write_rationale)
 
     # Phase 6 — Quality Assurance (5-way fan-out / fan-in)
-    graph.add_node("qa_literacy_fidelity", phase6_qa.qa_literacy_fidelity)
-    graph.add_node("qa_science_accuracy", phase6_qa.qa_science_accuracy)
-    graph.add_node("qa_instructional_integrity", phase6_qa.qa_instructional_integrity)
-    graph.add_node("qa_coherence_pacing", phase6_qa.qa_coherence_pacing)
-    graph.add_node("qa_consistency", phase6_qa.qa_consistency)
-    graph.add_node("aggregate_qa", phase6_qa.aggregate_qa)
-    graph.add_node("review_qa_feedback", checkpoints.review_qa_feedback)
+    add_node("qa_literacy_fidelity", phase6_qa.qa_literacy_fidelity)
+    add_node("qa_science_accuracy", phase6_qa.qa_science_accuracy)
+    add_node("qa_instructional_integrity", phase6_qa.qa_instructional_integrity)
+    add_node("qa_coherence_pacing", phase6_qa.qa_coherence_pacing)
+    add_node("qa_consistency", phase6_qa.qa_consistency)
+    add_node("aggregate_qa", phase6_qa.aggregate_qa)
+    add_node("review_qa_feedback", checkpoints.review_qa_feedback)
 
     # Phase 7 — Finalization
-    graph.add_node("incorporate_feedback", phase7_finalization.incorporate_feedback)
-    graph.add_node("re_review", phase7_finalization.re_review)
-    graph.add_node("finalize", phase7_finalization.finalize)
-    graph.add_node("produce_final_package", phase7_finalization.produce_final_package)
+    add_node("incorporate_feedback", phase7_finalization.incorporate_feedback)
+    add_node("re_review", phase7_finalization.re_review)
+    add_node("finalize", phase7_finalization.finalize)
+    add_node("produce_final_package", phase7_finalization.produce_final_package)
 
     # Wiring
     graph.add_edge(START, "intake")

@@ -122,7 +122,7 @@ class ScenarioState(TypedDict, total=False):
     error: Optional[str]
 
     # Phase 1 — Gather & Organize
-    documents: dict[str, Document]  # keys: lesson_1, lesson_2, lesson_3, literacy_strategy
+    documents: dict[str, Document]  # keys: lesson, literacy_strategy
     working_set_notes: str
     lesson_metadata: list[LessonMetadata]
     strategy_inventory: list[StrategyEntry]

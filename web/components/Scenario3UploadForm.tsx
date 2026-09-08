@@ -2,9 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { createScenario3Job } from "@/lib/api";
+import { createManualScenario3Job, createScenario3Job } from "@/lib/api";
 
-export function Scenario3UploadForm() {
+export function Scenario3UploadForm({ manual = false }: { manual?: boolean }) {
   const router = useRouter();
   const [scopeSequence, setScopeSequence] = useState<File | null>(null);
   const [standardsReference, setStandardsReference] = useState<File | null>(null);
@@ -20,12 +20,13 @@ export function Scenario3UploadForm() {
     setSubmitting(true);
     setError(null);
     try {
-      const { job_id } = await createScenario3Job({
+      const createJob = manual ? createManualScenario3Job : createScenario3Job;
+      const { job_id } = await createJob({
         scope_sequence: scopeSequence,
         standards_reference: standardsReference,
         lesson_files: lessonFiles,
       });
-      router.push(`/jobs/${job_id}`);
+      router.push(manual ? `/Manual/Scenario3/jobs/${job_id}` : `/jobs/${job_id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to start job");
       setSubmitting(false);
@@ -112,7 +113,7 @@ export function Scenario3UploadForm() {
                    font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90
                    transition-opacity w-fit"
       >
-        {submitting ? "Starting run…" : "Start Scenario 3 run"}
+        {submitting ? "Starting run…" : manual ? "Start manual Scenario 3 workflow" : "Start Scenario 3 run"}
       </button>
     </form>
   );

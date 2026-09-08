@@ -15,13 +15,14 @@ from app.llm import ask_structured
 from app.schemas import FitMatrix, LessonSummaryList, StrategyProfileList
 from app.state import ScenarioState
 
-LESSON_IDS = ["lesson_1", "lesson_2", "lesson_3"]
+def lesson_ids(state: ScenarioState) -> list[str]:
+    return ["lesson"] if "lesson" in state["documents"] else []
 
 
 def summarize_lessons(state: ScenarioState) -> dict:
     docs = state["documents"]
     lesson_blocks = "\n\n".join(
-        f"=== {lesson_id} ===\n{docs[lesson_id]['text']}" for lesson_id in LESSON_IDS if lesson_id in docs
+        f"=== {lesson_id} ===\n{docs[lesson_id]['text']}" for lesson_id in lesson_ids(state)
     )
     result = ask_structured(
         "Read each candidate lesson sufficiently to understand the instructional experience. For "

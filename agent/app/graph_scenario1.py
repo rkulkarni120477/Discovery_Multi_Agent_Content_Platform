@@ -13,6 +13,7 @@ import sqlite3
 from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.graph import END, START, StateGraph
 
+from app import store
 from app.nodes.scenario1 import (
     checkpoints,
     phase1_crosswalk,
@@ -27,29 +28,32 @@ from app.state_scenario1 import ScenarioState1
 def build_graph() -> StateGraph:
     graph = StateGraph(ScenarioState1)
 
+    def add_node(name: str, fn: object) -> None:
+        graph.add_node(name, store.workflow_step(fn))
+
     # Phase 1 -- Standards Crosswalk
-    graph.add_node("inventory_ngss_alignment", phase1_crosswalk.inventory_ngss_alignment)
-    graph.add_node("crosswalk_ngss_to_sc", phase1_crosswalk.crosswalk_ngss_to_sc)
-    graph.add_node("identify_sc_deltas", phase1_crosswalk.identify_sc_deltas)
+    add_node("inventory_ngss_alignment", phase1_crosswalk.inventory_ngss_alignment)
+    add_node("crosswalk_ngss_to_sc", phase1_crosswalk.crosswalk_ngss_to_sc)
+    add_node("identify_sc_deltas", phase1_crosswalk.identify_sc_deltas)
 
     # Phase 2 -- Performance Target Mapping & Validation
-    graph.add_node("map_performance_targets", phase2_targets.map_performance_targets)
-    graph.add_node("validate_grade_level_depth", phase2_targets.validate_grade_level_depth)
-    graph.add_node("review_grade_level_depth", checkpoints.review_grade_level_depth)
+    add_node("map_performance_targets", phase2_targets.map_performance_targets)
+    add_node("validate_grade_level_depth", phase2_targets.validate_grade_level_depth)
+    add_node("review_grade_level_depth", checkpoints.review_grade_level_depth)
 
     # Phase 3 -- Content Alignment Review
-    graph.add_node("define_alignment_criteria", phase3_evidence.define_alignment_criteria)
-    graph.add_node("review_discovery_evidence", phase3_evidence.review_discovery_evidence)
-    graph.add_node("classify_strong_partial_gap", phase3_evidence.classify_strong_partial_gap)
+    add_node("define_alignment_criteria", phase3_evidence.define_alignment_criteria)
+    add_node("review_discovery_evidence", phase3_evidence.review_discovery_evidence)
+    add_node("classify_strong_partial_gap", phase3_evidence.classify_strong_partial_gap)
 
     # Phase 4 -- Gap Analysis & Remediation
-    graph.add_node("identify_specific_gaps", phase4_gap.identify_specific_gaps)
-    graph.add_node("recommend_remediation", phase4_gap.recommend_remediation)
-    graph.add_node("review_gap_analysis", checkpoints.review_gap_analysis)
+    add_node("identify_specific_gaps", phase4_gap.identify_specific_gaps)
+    add_node("recommend_remediation", phase4_gap.recommend_remediation)
+    add_node("review_gap_analysis", checkpoints.review_gap_analysis)
 
     # Phase 5 -- QA & Finalization
-    graph.add_node("qa_and_finalize", phase5_qa_finalize.qa_and_finalize)
-    graph.add_node("produce_final_package", phase5_qa_finalize.produce_final_package)
+    add_node("qa_and_finalize", phase5_qa_finalize.qa_and_finalize)
+    add_node("produce_final_package", phase5_qa_finalize.produce_final_package)
 
     # Wiring
     graph.add_edge(START, "inventory_ngss_alignment")

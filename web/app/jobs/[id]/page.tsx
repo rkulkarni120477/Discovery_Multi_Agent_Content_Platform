@@ -17,6 +17,7 @@ import { RevisionPlanReview } from "@/components/RevisionPlanReview";
 import { RunProgressBar } from "@/components/RunProgressBar";
 import { Scenario1FinalResult } from "@/components/Scenario1FinalResult";
 import { Scenario3FinalResult } from "@/components/Scenario3FinalResult";
+import { StepNavigator } from "@/components/StepNavigator";
 import {
   SCENARIO1_PHASE_STEP_RANGES,
   SCENARIO2_PHASE_STEP_RANGES,
@@ -59,6 +60,7 @@ export default function JobDetailPage() {
   const [result, setResult] = useState<AnyFinalPackage | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [selectedStep, setSelectedStep] = useState(1);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const refresh = useCallback(async () => {
@@ -81,6 +83,12 @@ export default function JobDetailPage() {
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [refresh]);
+
+  useEffect(() => {
+    if (status) {
+      setSelectedStep(status.step ?? 1);
+    }
+  }, [status]);
 
   useEffect(() => {
     if (status?.status === "complete" || status?.status === "error") {
@@ -133,7 +141,12 @@ export default function JobDetailPage() {
       {!status && !error && <p className="text-sm text-neutral-500">Loading…</p>}
 
       {status && (
-        <div className="grid grid-cols-1 md:grid-cols-[16rem_1fr] gap-10">
+        <>
+          <StepNavigator
+            scenario={status.scenario}
+            selectedStep={selectedStep}
+          />
+          <div className="grid grid-cols-1 md:grid-cols-[16rem_1fr] gap-10">
           <PhaseTimeline
             phases={status.phases}
             phaseStepRanges={phaseStepRanges}
@@ -142,7 +155,7 @@ export default function JobDetailPage() {
             status={status.status}
           />
 
-          <div>
+            <div>
             {status.status === "running" && (
               <p className="text-sm text-neutral-500">Agents are working — this refreshes automatically…</p>
             )}
@@ -221,8 +234,9 @@ export default function JobDetailPage() {
             {status.status === "complete" && !result && (
               <p className="text-sm text-neutral-500">Loading final package…</p>
             )}
+            </div>
           </div>
-        </div>
+        </>
       )}
       {status && (
         <RunProgressBar

@@ -30,9 +30,7 @@ class DocumentIn(BaseModel):
 
 class RunCreateRequest(BaseModel):
     job_id: str
-    lesson_1: DocumentIn
-    lesson_2: DocumentIn
-    lesson_3: DocumentIn
+    lesson: DocumentIn
     literacy_strategy: DocumentIn
 
 
@@ -55,9 +53,7 @@ def create_run(request: RunCreateRequest) -> RunCreateResponse:
         "job_id": request.job_id,
         "status": "running",
         "documents": {
-            "lesson_1": request.lesson_1.model_dump(),
-            "lesson_2": request.lesson_2.model_dump(),
-            "lesson_3": request.lesson_3.model_dump(),
+            "lesson": request.lesson.model_dump(),
             "literacy_strategy": request.literacy_strategy.model_dump(),
         },
     }
@@ -77,6 +73,30 @@ def resume_run(run_id: str, request: ResumeRequest) -> RunStatusResponse:
         raise HTTPException(status_code=409, detail=f"run is '{current.status}', not paused")
     resume_value = request.value if request.value is not None else store.NO_OVERRIDE
     store.resume_run(get_compiled_graph(), run_id, resume_value)
+    return _status(run_id)
+
+
+@router.post("/runs/{run_id}/pause", response_model=RunStatusResponse)
+def pause_workflow(run_id: str) -> RunStatusResponse:
+    current = _status(run_id)
+    if current.status in {"complete", "error"}:
+        raise HTTPException(status_code=409, detail=f"run is '{current.status}'")
+    store.pause_run(run_id)
+    return _status(run_id)
+
+
+@router.post("/runs/{run_id}/resume-workflow", response_model=RunStatusResponse)
+def resume_workflow(run_id: str) -> RunStatusResponse:
+    store.resume_workflow(run_id)
+    return _status(run_id)
+
+
+@router.post("/runs/{run_id}/next", response_model=RunStatusResponse)
+def next_step(run_id: str) -> RunStatusResponse:
+    current = _status(run_id)
+    if current.status != "paused" or current.interrupt_type != "manual_step":
+        raise HTTPException(status_code=409, detail="run is not waiting for a manual step")
+    store.resume_run(get_compiled_graph(), run_id, store.MANUAL_ADVANCE)
     return _status(run_id)
 
 

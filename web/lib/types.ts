@@ -11,6 +11,7 @@ export interface JobStatus {
   phases: string[];
   interrupt_type: string | null;
   interrupt_payload: Record<string, unknown> | null;
+  workflow_paused: boolean;
   error: string | null;
   created_at: string;
   updated_at: string;

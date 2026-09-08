@@ -6,8 +6,8 @@ export const SCENARIO1_DOCUMENT_KEYS = [
 ] as const;
 export type Scenario1DocumentKey = (typeof SCENARIO1_DOCUMENT_KEYS)[number];
 
-export const DOCUMENT_KEYS = ["lesson_1", "lesson_2", "lesson_3", "literacy_strategy"] as const;
-export type DocumentKey = (typeof DOCUMENT_KEYS)[number];
+export const SCENARIO2_DOCUMENT_KEYS = ["lesson", "literacy_strategy"] as const;
+export type Scenario2DocumentKey = (typeof SCENARIO2_DOCUMENT_KEYS)[number];
 
 export const SCENARIO3_SINGLE_FILE_KEYS = ["scope_sequence", "standards_reference"] as const;
 export type Scenario3SingleFileKey = (typeof SCENARIO3_SINGLE_FILE_KEYS)[number];
@@ -39,6 +39,7 @@ export interface AgentRunStatus {
   phases: string[];
   interrupt_type: string | null;
   interrupt_payload: Record<string, unknown> | null;
+  workflow_paused: boolean;
   error: string | null;
 }
 

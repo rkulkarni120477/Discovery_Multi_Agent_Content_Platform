@@ -39,9 +39,7 @@ def test_full_run_reaches_final_package():
         "job_id": run_id,
         "status": "running",
         "documents": {
-            "lesson_1": _doc("lesson_1.txt"),
-            "lesson_2": _doc("lesson_2.txt"),
-            "lesson_3": _doc("lesson_3.txt"),
+            "lesson": _doc("lesson_1.txt"),
             "literacy_strategy": _doc("literacy_strategy.txt"),
         },
     }

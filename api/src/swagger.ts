@@ -57,9 +57,7 @@ export const swaggerSpec = swaggerJsdoc({
               type: "object",
               additionalProperties: true,
               example: {
-                lesson_1: "lesson_02.docx",
-                lesson_2: "lesson_03.docx",
-                lesson_3: "lesson_04.docx",
+                lesson: "lesson.docx",
                 literacy_strategy: "literacy_strategies.docx",
               },
             },

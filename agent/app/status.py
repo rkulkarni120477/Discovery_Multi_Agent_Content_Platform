@@ -21,6 +21,7 @@ class RunStatusResponse(BaseModel):
     phases: list[str]
     interrupt_type: Optional[str] = None
     interrupt_payload: Optional[dict[str, Any]] = None
+    workflow_paused: bool = False
     error: Optional[str] = None
 
 
@@ -31,6 +32,7 @@ def build_status(graph: Any, run_id: str, total_steps: int, phases: list[str]) -
 
     values = snapshot.values
     error = store.get_last_error(run_id)
+    workflow_paused = store.is_workflow_paused(run_id)
 
     interrupt_type = None
     interrupt_payload = None
@@ -45,6 +47,8 @@ def build_status(graph: Any, run_id: str, total_steps: int, phases: list[str]) -
         status = "error"
     elif values.get("status") == "complete":
         status = "complete"
+    elif workflow_paused:
+        status = "paused"
     elif interrupt_type:
         status = "paused"
     else:
@@ -59,5 +63,6 @@ def build_status(graph: Any, run_id: str, total_steps: int, phases: list[str]) -
         phases=phases,
         interrupt_type=interrupt_type,
         interrupt_payload=interrupt_payload,
+        workflow_paused=workflow_paused,
         error=error,
     )
