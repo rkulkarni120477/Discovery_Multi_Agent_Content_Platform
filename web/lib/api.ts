@@ -119,6 +119,11 @@ export async function resumeCustomJob(id: string, value: unknown): Promise<Custo
   }));
 }
 
+export function getCustomResultDocxUrl(id: string, scenarioName: string, workflow: CustomWorkflowStep[]): string {
+  const query = new URLSearchParams({ name: scenarioName, workflow: JSON.stringify(workflow) });
+  return `${API_BASE}/api/custom/jobs/${id}/result.docx?${query.toString()}`;
+}
+
 export async function listJobs(): Promise<JobSummary[]> {
   const response = await fetch(`${API_BASE}/api/jobs`, { cache: "no-store" });
   return handle(response);

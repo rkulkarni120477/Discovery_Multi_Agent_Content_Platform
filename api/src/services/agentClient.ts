@@ -134,3 +134,7 @@ export function resumeCustomRun(runId: string, value: unknown): Promise<AgentRun
     body: JSON.stringify({ value }),
   });
 }
+
+export function getCustomRunResult(runId: string): Promise<Record<string, unknown>> {
+  return agentFetch(`/custom/runs/${encodeURIComponent(runId)}/result`);
+}

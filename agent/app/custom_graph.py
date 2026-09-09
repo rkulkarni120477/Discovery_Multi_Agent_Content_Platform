@@ -112,11 +112,11 @@ def resolve_step(scenario: str, node: str) -> SourceNode:
         raise ValueError(f"Unknown custom source step: {scenario}.{node}") from error
 
 
-def _adapt(scenario: str, function: NodeFunction) -> Callable[[CustomScenarioState], dict[str, Any]]:
+def _adapt(scenario: str, position: int, function: NodeFunction) -> Callable[[CustomScenarioState], dict[str, Any]]:
     def adapted(state: CustomScenarioState) -> dict[str, Any]:
         source_state = state.get(scenario, {})
         update = function(source_state)
-        return {scenario: {**source_state, **update}}
+        return {scenario: {**source_state, **update}, "phase": "Custom scenario", "step": position}
 
     return adapted
 
@@ -128,17 +128,9 @@ def build_graph(selected_steps: list[dict[str, str]]) -> StateGraph:
     for position, selection in enumerate(selected_steps, start=1):
         source = resolve_step(selection["scenario"], selection["node"])
         node_id = f"step_{position}_{selection['scenario']}_{selection['node']}"
-        adapted = _adapt(selection["scenario"], source["function"])
-
-        if source["checkpoint"]:
-            approval_id = f"{node_id}_approval"
-            graph.add_node(approval_id, manual_store.manual_step(position, source["label"], lambda state: {}))
-            graph.add_node(node_id, adapted)
-            graph.add_edge(previous, approval_id)
-            graph.add_edge(approval_id, node_id)
-        else:
-            graph.add_node(node_id, manual_store.manual_step(position, source["label"], adapted))
-            graph.add_edge(previous, node_id)
+        adapted = _adapt(selection["scenario"], position, source["function"])
+        graph.add_node(node_id, adapted)
+        graph.add_edge(previous, node_id)
         previous = node_id
 
     def complete(state: CustomScenarioState) -> dict[str, Any]:

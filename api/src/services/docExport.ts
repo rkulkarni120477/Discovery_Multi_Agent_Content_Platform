@@ -375,3 +375,40 @@ export async function buildScenario3FinalPackageDocx(pkg: Scenario3FinalPackage)
   });
   return Packer.toBuffer(doc);
 }
+
+export async function buildCustomScenarioDocx(
+  scenarioName: string,
+  workflow: Array<{ scenario: string; stepNumber: number; selectedStep: number }>,
+  result: Record<string, unknown>,
+): Promise<Buffer> {
+  const workflowRows = workflow
+    .slice()
+    .sort((first, second) => first.selectedStep - second.selectedStep)
+    .map((step) => ({
+      workflow_step: step.selectedStep,
+      source_scenario: step.scenario.replace("scenario", "Scenario "),
+      source_step: step.stepNumber,
+      execution_status: "Executed",
+    }));
+  const sourcePackages = (result.final_package ?? result) as Record<string, unknown>;
+
+  const doc = new Document({
+    sections: [
+      {
+        children: [
+          ...reportTitle(scenarioName, "Custom Scenario | Execution Results"),
+          ...valueTable("Scenario Summary", [
+            ["Scenario Name", scenarioName],
+            ["Selected Steps", workflowRows.length],
+            ["Execution Status", "Complete"],
+          ]),
+          ...jsonTableSection("Executed Workflow Steps", workflowRows),
+          ...Object.entries(sourcePackages).flatMap(([source, value]) =>
+            jsonTableSection(`${readableHeader(source)} Results`, value),
+          ),
+        ],
+      },
+    ],
+  });
+  return Packer.toBuffer(doc);
+}

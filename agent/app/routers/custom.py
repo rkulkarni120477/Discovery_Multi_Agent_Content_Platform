@@ -47,7 +47,15 @@ def _graph(run_id: str) -> Any:
 
 def status(run_id: str) -> ManualRunStatusResponse:
     graph = _graph(run_id)
-    return build_status(graph, run_id, len(manual_store.get_state(graph, run_id).values["selected_steps"]), ["Custom scenario"])
+    snapshot = manual_store.get_state(graph, run_id)
+    if snapshot is None or not snapshot.values:
+        return ManualRunStatusResponse(
+            run_id=run_id,
+            status="running",
+            total_steps=0,
+            phases=["Custom scenario"],
+        )
+    return build_status(graph, run_id, len(snapshot.values["selected_steps"]), ["Custom scenario"])
 
 
 @router.post("/runs")

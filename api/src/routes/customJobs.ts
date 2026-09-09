@@ -5,6 +5,7 @@ import { createJob, deleteJob, getJob, updateJobStatus } from "../db";
 import * as agent from "../services/agentClient";
 import { extractText } from "../services/fileParser";
 import { getSouthCarolinaScienceSources } from "../services/scScienceSources";
+import { buildCustomScenarioDocx } from "../services/docExport";
 import type { ParsedDocument, ScenarioKey } from "../types";
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 100 * 1024 * 1024 } });
@@ -136,6 +137,22 @@ customJobsRouter.get("/jobs/:id", async (req, res) => {
     updateJobStatus(job.id, status.status, status.phase, status.step);
     res.json({ ...status, job_id: job.id, scenario: "custom", created_at: job.created_at, updated_at: new Date().toISOString(), filenames: JSON.parse(job.filenames) });
   } catch (err) { res.status(502).json({ error: err instanceof Error ? err.message : "Failed to fetch custom status" }); }
+});
+
+customJobsRouter.get("/jobs/:id/result.docx", async (req, res) => {
+  const job = getJob(req.params.id);
+  if (!job || job.scenario !== "custom") { res.status(404).json({ error: "custom job not found" }); return; }
+  try {
+    const status = await agent.getCustomRunStatus(job.id);
+    if (status.status !== "complete") { res.status(409).json({ error: "custom workflow is not complete" }); return; }
+    const result = await agent.getCustomRunResult(job.id);
+    const workflow = JSON.parse(req.query.workflow as string) as WorkflowStep[];
+    const scenarioName = typeof req.query.name === "string" ? req.query.name : "Custom Scenario";
+    const buffer = await buildCustomScenarioDocx(scenarioName, workflow, result);
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+    res.setHeader("Content-Disposition", 'attachment; filename="Results.docx"');
+    res.send(buffer);
+  } catch (err) { res.status(502).json({ error: err instanceof Error ? err.message : "Failed to build custom scenario docx" }); }
 });
 
 customJobsRouter.post("/jobs/:id/approve", async (req, res) => {

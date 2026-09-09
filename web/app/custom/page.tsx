@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { createCustomJob } from "@/lib/api";
 import { getStepGuides } from "@/lib/stepGuide";
 import type { ScenarioKey } from "@/lib/types";
 
@@ -82,6 +83,8 @@ export default function CustomPage() {
   const router = useRouter();
   const [rows, setRows] = useState<RowState[]>(() => buildRows());
   const [uploadedFiles, setUploadedFiles] = useState<Record<string, File[]>>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const selectedStepIds = useMemo(
     () => new Set(rows.filter((row) => row.checked && row.selectedStep).map((row) => row.selectedStep)),
@@ -123,7 +126,7 @@ export default function CustomPage() {
     return false;
   });
   const prerequisitesSatisfied = !hasMissingPrerequisites || allRequiredUploadsSelected;
-  const canGenerateScenario = hasSelectedRows && allCheckedRowsHaveSteps && stepsAreInOrder && prerequisitesSatisfied;
+  const canGenerateScenario = hasSelectedRows && allCheckedRowsHaveSteps && stepsAreInOrder && prerequisitesSatisfied && allRequiredUploadsSelected;
   const hasStepOrderError = selectedStepNumbers.length > 0 && !stepsAreInOrder;
 
   function toggleRow(rowId: string, checked: boolean) {
@@ -145,8 +148,8 @@ export default function CustomPage() {
     );
   }
 
-  function handleGenerateScenario() {
-    if (!canGenerateScenario) return;
+  async function handleGenerateScenario() {
+    if (!canGenerateScenario || submitting) return;
 
     const scenarioName = window.prompt("Enter a name for this custom scenario:", "Custom Scenario");
     const trimmedName = scenarioName?.trim();
@@ -157,25 +160,37 @@ export default function CustomPage() {
       ...row,
       selectedStep: Number(row.selectedStep),
     }));
-
-    const customScenario = {
-      id: `custom-${Date.now()}`,
-      name: trimmedName,
-      slug: toScenarioSlug(trimmedName),
-      steps: workflowSteps.map((row) => ({
-        scenario: row.scenario,
-        stepNumber: row.stepNumber,
-        stepName: row.stepName,
-        selectedStep: row.selectedStep,
-      })),
-    };
-
-    const stored = window.localStorage.getItem("custom-scenarios");
-    const existing: Array<{ id: string; name: string; steps: unknown[] }> = stored ? JSON.parse(stored) : [];
-    const nextScenarios = Array.isArray(existing) ? [...existing, customScenario] : [customScenario];
-    window.localStorage.setItem("custom-scenarios", JSON.stringify(nextScenarios));
-
-    router.push("/");
+    setSubmitting(true);
+    setError(null);
+    try {
+      const job = await createCustomJob(
+        workflowSteps.map((row) => ({
+          scenario: row.scenario,
+          stepNumber: row.stepNumber,
+          selectedStep: row.selectedStep,
+        })),
+        Object.fromEntries(Object.entries(uploadedFiles).map(([key, files]) => [key.replaceAll("-", "_"), files])),
+      );
+      const customScenario = {
+        id: `custom-${Date.now()}`,
+        jobId: job.job_id,
+        name: trimmedName,
+        slug: toScenarioSlug(trimmedName),
+        steps: workflowSteps.map((row) => ({
+          scenario: row.scenario,
+          stepNumber: row.stepNumber,
+          stepName: row.stepName,
+          selectedStep: row.selectedStep,
+        })),
+      };
+      const stored = window.localStorage.getItem("custom-scenarios");
+      const existing: Array<{ id: string; name: string; steps: unknown[] }> = stored ? JSON.parse(stored) : [];
+      window.localStorage.setItem("custom-scenarios", JSON.stringify(Array.isArray(existing) ? [...existing, customScenario] : [customScenario]));
+      router.push(`/${customScenario.slug}`);
+    } catch (submissionError) {
+      setError(submissionError instanceof Error ? submissionError.message : "Failed to start custom workflow");
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -249,11 +264,12 @@ export default function CustomPage() {
           Please check the steps order.
         </p>
       )}
-      {hasMissingPrerequisites && (
+      {hasMissingPrerequisites && !allRequiredUploadsSelected && (
         <p className="mt-4 text-sm text-red-600 dark:text-red-400" role="alert">
           Please select all prerequisite steps for each chosen source scenario.
         </p>
       )}
+      {error && <p className="mt-4 text-sm text-red-600 dark:text-red-400" role="alert">{error}</p>}
 
       {hasSelectedRows && (
         <section className="mt-6 border-t border-neutral-200 pt-6 dark:border-neutral-800">
@@ -303,10 +319,10 @@ export default function CustomPage() {
         <button
           type="button"
           disabled={!canGenerateScenario}
-          onClick={handleGenerateScenario}
+          onClick={() => void handleGenerateScenario()}
           className="rounded-lg bg-orange-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-orange-700 disabled:cursor-not-allowed disabled:bg-neutral-400"
         >
-          Generate scenario
+          {submitting ? "Starting workflow..." : "Generate scenario"}
         </button>
       </div>
     </main>
