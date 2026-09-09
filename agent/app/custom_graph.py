@@ -142,7 +142,11 @@ def build_graph(selected_steps: list[dict[str, str]]) -> StateGraph:
         previous = node_id
 
     def complete(state: CustomScenarioState) -> dict[str, Any]:
-        packages = {name: value.get("final_package") for name in ("scenario1", "scenario2", "scenario3") if value.get("final_package")}
+        packages = {
+            name: source_state.get("final_package")
+            for name in ("scenario1", "scenario2", "scenario3")
+            if (source_state := state.get(name, {})).get("final_package")
+        }
         return {"status": "complete", "phase": "Complete", "step": len(selected_steps), "final_package": packages}
 
     graph.add_node("complete", complete)
