@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { JobExecutionMode, JobRecord, ScenarioKey } from "./types";
+import type { JobExecutionMode, JobRecord, JobScenarioKey } from "./types";
 
 // A flat JSON file is enough here: this table only stores lightweight job bookkeeping (id,
 // status, filenames, timestamps). The actual workflow state of record lives in the agent
@@ -43,7 +43,7 @@ function writeAll(jobs: Record<string, JobRecord>): void {
 
 export function createJob(
   id: string,
-  scenario: ScenarioKey,
+  scenario: JobScenarioKey,
   filenames: Record<string, unknown>,
   execution_mode: JobExecutionMode = "automated"
 ): JobRecord {

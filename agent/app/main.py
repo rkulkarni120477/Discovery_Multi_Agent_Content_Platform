@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import manual_scenario1, manual_scenario2, manual_scenario3, scenario1, scenario2, scenario3
+from app.routers import custom, manual_scenario1, manual_scenario2, manual_scenario3, scenario1, scenario2, scenario3
 
 load_dotenv()
 
@@ -29,6 +29,7 @@ app.include_router(scenario3.router)
 app.include_router(manual_scenario1.router)
 app.include_router(manual_scenario2.router)
 app.include_router(manual_scenario3.router)
+app.include_router(custom.router)
 
 
 @app.get("/health")

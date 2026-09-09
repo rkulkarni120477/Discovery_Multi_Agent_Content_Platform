@@ -1,4 +1,5 @@
 export type ScenarioKey = "scenario1" | "scenario2" | "scenario3";
+export type JobScenarioKey = ScenarioKey | "custom";
 export type JobExecutionMode = "automated" | "manual";
 
 export const SCENARIO1_DOCUMENT_KEYS = [
@@ -21,7 +22,7 @@ export interface ParsedDocument {
 
 export interface JobRecord {
   id: string;
-  scenario: ScenarioKey;
+  scenario: JobScenarioKey;
   execution_mode: JobExecutionMode;
   status: string;
   phase: string | null;

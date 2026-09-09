@@ -108,3 +108,29 @@ export function resumeManualCheckpoint(scenario: ScenarioKey, runId: string, val
 export function getManualRunResult(scenario: ScenarioKey, runId: string): Promise<Record<string, unknown>> {
   return agentFetch(`/manual/${scenario}/runs/${encodeURIComponent(runId)}/result`);
 }
+
+export function startCustomRun(
+  runId: string,
+  selectedSteps: Array<{ scenario: ScenarioKey; node: string }>,
+  sourceStates: Record<string, Record<string, unknown>>,
+): Promise<{ run_id: string; status: string }> {
+  return agentFetch("/custom/runs", {
+    method: "POST",
+    body: JSON.stringify({ job_id: runId, selected_steps: selectedSteps, source_states: sourceStates }),
+  });
+}
+
+export function getCustomRunStatus(runId: string): Promise<AgentRunStatus> {
+  return agentFetch(`/custom/runs/${encodeURIComponent(runId)}`);
+}
+
+export function approveCustomStep(runId: string): Promise<AgentRunStatus> {
+  return agentFetch(`/custom/runs/${encodeURIComponent(runId)}/approve`, { method: "POST" });
+}
+
+export function resumeCustomRun(runId: string, value: unknown): Promise<AgentRunStatus> {
+  return agentFetch(`/custom/runs/${encodeURIComponent(runId)}/resume`, {
+    method: "POST",
+    body: JSON.stringify({ value }),
+  });
+}

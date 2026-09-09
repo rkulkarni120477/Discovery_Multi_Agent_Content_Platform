@@ -249,9 +249,9 @@ export default function CustomPage() {
           Please check the steps order.
         </p>
       )}
-      {hasMissingPrerequisites && !allRequiredUploadsSelected && (
+      {hasMissingPrerequisites && (
         <p className="mt-4 text-sm text-red-600 dark:text-red-400" role="alert">
-          Please select all prerequisite steps or upload all required documents for the chosen scenario steps.
+          Please select all prerequisite steps for each chosen source scenario.
         </p>
       )}
 

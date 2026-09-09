@@ -83,6 +83,42 @@ export async function getManualJobResult(scenario: string, id: string): Promise<
   return handle(await fetch(`${API_BASE}/api/manual/${scenario}/jobs/${id}/result`, { cache: "no-store" }));
 }
 
+export type CustomWorkflowStep = {
+  scenario: "scenario1" | "scenario2" | "scenario3";
+  stepNumber: number;
+  selectedStep: number;
+};
+
+export type CustomJobStatus = Omit<JobStatus, "scenario"> & { scenario: "custom" };
+
+export async function createCustomJob(
+  workflow: CustomWorkflowStep[],
+  files: Record<string, File[]>,
+): Promise<{ job_id: string; status: string }> {
+  const form = new FormData();
+  form.append("workflow", JSON.stringify(workflow));
+  for (const [field, fieldFiles] of Object.entries(files)) {
+    for (const file of fieldFiles) form.append(field, file);
+  }
+  return handle(await fetch(`${API_BASE}/api/custom/jobs`, { method: "POST", body: form }));
+}
+
+export async function getCustomJobStatus(id: string): Promise<CustomJobStatus> {
+  return handle(await fetch(`${API_BASE}/api/custom/jobs/${id}`, { cache: "no-store" }));
+}
+
+export async function approveCustomJobStep(id: string): Promise<CustomJobStatus> {
+  return handle(await fetch(`${API_BASE}/api/custom/jobs/${id}/approve`, { method: "POST" }));
+}
+
+export async function resumeCustomJob(id: string, value: unknown): Promise<CustomJobStatus> {
+  return handle(await fetch(`${API_BASE}/api/custom/jobs/${id}/resume`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ value }),
+  }));
+}
+
 export async function listJobs(): Promise<JobSummary[]> {
   const response = await fetch(`${API_BASE}/api/jobs`, { cache: "no-store" });
   return handle(response);

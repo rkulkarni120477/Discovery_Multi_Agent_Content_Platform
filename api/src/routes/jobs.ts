@@ -13,6 +13,7 @@ import { extractText } from "../services/fileParser";
 import type {
   FinalPackage,
   JobStatusResponse,
+  JobRecord,
   ParsedDocument,
   Scenario2DocumentKey,
   Scenario1FinalPackage,
@@ -24,6 +25,10 @@ import { SCENARIO2_DOCUMENT_KEYS } from "../types";
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
 
 export const jobsRouter = Router();
+
+function isSourceScenarioJob(job: JobRecord): job is JobRecord & { scenario: ScenarioKey } {
+  return job.scenario !== "custom";
+}
 
 async function getAgentStatus(job: { scenario: ScenarioKey; execution_mode: string }, jobId: string) {
   if (job.execution_mode === "manual") return agent.getManualRunStatus(job.scenario, jobId);
@@ -141,7 +146,7 @@ jobsRouter.post(
  *               items: { $ref: '#/components/schemas/JobSummary' }
  */
 jobsRouter.get("/", (_req, res) => {
-  const jobs = listJobs().map((job) => ({
+  const jobs = listJobs().filter(isSourceScenarioJob).map((job) => ({
     id: job.id,
     scenario: job.scenario,
     status: job.status,
@@ -184,7 +189,7 @@ jobsRouter.get("/", (_req, res) => {
  */
 jobsRouter.get("/:id", async (req, res) => {
   const job = getJob(req.params.id);
-  if (!job) {
+  if (!job || !isSourceScenarioJob(job)) {
     res.status(404).json({ error: "job not found" });
     return;
   }
@@ -241,7 +246,7 @@ jobsRouter.get("/:id", async (req, res) => {
  */
 jobsRouter.post("/:id/resume", async (req, res) => {
   const job = getJob(req.params.id);
-  if (!job) {
+  if (!job || !isSourceScenarioJob(job)) {
     res.status(404).json({ error: "job not found" });
     return;
   }
@@ -258,7 +263,7 @@ jobsRouter.post("/:id/resume", async (req, res) => {
 
 jobsRouter.post("/:id/pause", async (req, res) => {
   const job = getJob(req.params.id);
-  if (!job) {
+  if (!job || !isSourceScenarioJob(job)) {
     res.status(404).json({ error: "job not found" });
     return;
   }
@@ -273,7 +278,7 @@ jobsRouter.post("/:id/pause", async (req, res) => {
 
 jobsRouter.post("/:id/resume-workflow", async (req, res) => {
   const job = getJob(req.params.id);
-  if (!job) {
+  if (!job || !isSourceScenarioJob(job)) {
     res.status(404).json({ error: "job not found" });
     return;
   }
@@ -318,7 +323,7 @@ jobsRouter.post("/:id/resume-workflow", async (req, res) => {
  */
 jobsRouter.get("/:id/result", async (req, res) => {
   const job = getJob(req.params.id);
-  if (!job) {
+  if (!job || !isSourceScenarioJob(job)) {
     res.status(404).json({ error: "job not found" });
     return;
   }
@@ -358,7 +363,7 @@ jobsRouter.get("/:id/result", async (req, res) => {
  */
 jobsRouter.get("/:id/result.docx", async (req, res) => {
   const job = getJob(req.params.id);
-  if (!job) {
+  if (!job || !isSourceScenarioJob(job)) {
     res.status(404).json({ error: "job not found" });
     return;
   }
@@ -390,7 +395,7 @@ jobsRouter.get("/:id/result.docx", async (req, res) => {
  */
 jobsRouter.get("/:id/result.xlsx", async (req, res) => {
   const job = getJob(req.params.id);
-  if (!job) {
+  if (!job || !isSourceScenarioJob(job)) {
     res.status(404).json({ error: "job not found" });
     return;
   }
