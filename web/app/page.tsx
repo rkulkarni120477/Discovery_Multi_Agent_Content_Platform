@@ -2,27 +2,85 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-const SCENARIOS = [
+type CustomScenario = {
+  id: string;
+  name: string;
+  slug?: string;
+};
+
+const STORAGE_KEY = "custom-scenarios";
+
+function toScenarioSlug(name: string) {
+  const slug = name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+  return slug || "custom-scenario";
+}
+
+const BASE_SCENARIOS = [
   { value: "", scenario: "", label: "Select a scenario…" },
   { value: "/scenario1", scenario: "Scenario1", label: "Scenario 1 — NGSS-to-State Standards Crosswalk" },
   { value: "/scenario2", scenario: "Scenario2", label: "Scenario 2 — Literacy Strategy Integration" },
   { value: "/scenario3", scenario: "Scenario3", label: "Scenario 3 — State Standards Alignment" },
+  { value: "/custom", scenario: "Custom", label: "Custom" },
 ] as const;
 
 export default function Home() {
   const router = useRouter();
   const [value, setValue] = useState("");
   const [manualExecution, setManualExecution] = useState(false);
+  const [customScenarios, setCustomScenarios] = useState<CustomScenario[]>([]);
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(STORAGE_KEY);
+      if (!stored) return;
+      const parsed = JSON.parse(stored) as CustomScenario[];
+      if (Array.isArray(parsed)) {
+        const scenarios = parsed.map((scenario) => ({
+          ...scenario,
+          slug: scenario.slug ?? toScenarioSlug(scenario.name),
+        }));
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(scenarios));
+        setCustomScenarios(scenarios);
+      }
+    } catch {
+      setCustomScenarios([]);
+    }
+  }, []);
+
+  const SCENARIOS = useMemo(
+    () => [
+      ...BASE_SCENARIOS,
+      ...customScenarios.map((scenario) => ({
+        value: `/${scenario.slug ?? toScenarioSlug(scenario.name)}`,
+        scenario: "Custom",
+        label: scenario.name,
+      })),
+    ],
+    [customScenarios],
+  );
 
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const next = e.target.value;
     setValue(next);
-    const selectedScenario = SCENARIOS.find((scenario) => scenario.value === next)?.scenario;
-    if (selectedScenario) {
-      router.push(manualExecution ? `/Manual/${selectedScenario}` : next);
+
+    if (!next) return;
+
+    if (next === "/custom") {
+      router.push("/custom");
+      return;
     }
+
+    const selectedScenario = SCENARIOS.find((scenario) => scenario.value === next)?.scenario;
+    if (!selectedScenario) return;
+
+    router.push(selectedScenario === "Custom" ? next : manualExecution ? `/Manual/${selectedScenario}` : next);
   }
 
   return (
