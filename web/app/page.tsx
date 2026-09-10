@@ -104,7 +104,7 @@ export default function Home() {
           onChange={(e) => setManualExecution(e.target.checked)}
           className="h-4 w-4 accent-orange-600"
         />
-        Manual Execution
+        Semi-Agentic Execution
       </label>
 
       <label className="flex flex-col gap-1.5 max-w-md">
