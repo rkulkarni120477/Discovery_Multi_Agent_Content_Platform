@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Multi-Agent Scenario Executor",
+  title: "Academian CourseCraft AI",
   description: "Literacy strategy integration workflow for Discovery Education science lessons.",
 };
 
