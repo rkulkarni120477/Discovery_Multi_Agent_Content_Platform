@@ -113,7 +113,7 @@ export default function Home() {
         accelerate content delivery while maintaining strict compliance.
       </p>
 
-      <label className="mb-5 flex w-fit items-center gap-2 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+      <label className="mb-5 flex max-w-full flex-wrap items-center gap-2 text-sm font-medium text-neutral-700 dark:text-neutral-300">
         <input
           type="checkbox"
           checked={manualExecution}
@@ -121,6 +121,9 @@ export default function Home() {
           className="h-4 w-4 accent-orange-600"
         />
         Semi-Agentic Execution
+        <span className="font-bold text-red-600 dark:text-red-400">
+          Please check this box only if you want to stop at every step and understand what step does...
+        </span>
       </label>
 
       <label className="flex flex-col gap-1.5 max-w-md">

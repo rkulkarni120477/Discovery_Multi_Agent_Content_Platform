@@ -16,6 +16,32 @@ from app.state import ScenarioState
 from app.store import NO_OVERRIDE
 
 
+def automate_combination_selection(state: ScenarioState) -> dict:
+    selected = dict(state["recommended_combination"])
+    selected["lesson_id"] = _resolve_lesson_key(state, selected["lesson_id"])
+    return {
+        "selected_combination": selected,
+        "phase": "Understand & Screen",
+        "step": 7,
+    }
+
+
+def automate_integration_point_selection(state: ScenarioState) -> dict:
+    return {
+        "selected_integration_point": state["recommended_integration_point"],
+        "phase": "Deep Instructional Analysis",
+        "step": 11,
+    }
+
+
+def automate_qa_feedback_review(state: ScenarioState) -> dict:
+    return {
+        "qa_human_decisions": {},
+        "phase": "Quality Assurance",
+        "step": 24,
+    }
+
+
 def _resolve_lesson_key(state: ScenarioState, lesson_id: str) -> str:
     if lesson_id in state["documents"]:
         return lesson_id

@@ -1,6 +1,4 @@
-"""End-to-end smoke test for Scenario 3: drives the compiled graph through all 16 steps using the
-synthetic fixtures, auto-confirming the AI's recommendation at each of the 3 human checkpoints, and
-asserts a non-empty final package comes out the other end.
+"""End-to-end smoke test for the fully automated Scenario 3 graph using synthetic fixtures.
 
 Requires a real OPENAI_API_KEY (this test makes real model calls) — skipped otherwise.
 """
@@ -46,6 +44,7 @@ def test_full_run_reaches_final_package():
     }
 
     graph.invoke(initial_state, config=config)
+    assert not graph.get_state(config).next, "automated Scenario 3 must not pause for HITL review"
 
     safety_counter = 0
     while graph.get_state(config).next:

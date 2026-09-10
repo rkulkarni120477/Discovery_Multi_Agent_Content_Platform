@@ -1,4 +1,4 @@
-"""Builds the Scenario 3 LangGraph StateGraph: 6 phases, 16 steps, 3 human checkpoints.
+"""Builds the Scenario 3 LangGraph StateGraph: 6 phases, 16 automated steps.
 
 Kept as a fully separate compiled graph (own nodes, own checkpointer file) from Scenario 2's graph
 in graph.py -- the two workflows share no state and there is no benefit to coupling them, only risk.
@@ -36,12 +36,12 @@ def build_graph() -> StateGraph:
     add_node("acquire_standards", phase1_gather.acquire_standards)
     add_node("extract_c3_alignment", phase1_gather.extract_c3_alignment)
     add_node("build_crosswalk", phase1_gather.build_crosswalk)
-    add_node("review_crosswalk", checkpoints.review_crosswalk)
+    add_node("review_crosswalk", checkpoints.automate_crosswalk_review)
 
     # Phase 2 -- Read & Map
     add_node("summarize_lessons", phase2_map.summarize_lessons)
     add_node("map_to_standards", phase2_map.map_to_standards)
-    add_node("review_alignment_map", checkpoints.review_alignment_map)
+    add_node("review_alignment_map", checkpoints.automate_alignment_map_review)
 
     # Phase 3 -- Gap Analysis
     add_node("compile_gap_list", phase3_gap.compile_gap_list)
@@ -49,7 +49,7 @@ def build_graph() -> StateGraph:
 
     # Phase 4 -- Revision Planning
     add_node("plan_and_place_revisions", phase4_revision.plan_and_place_revisions)
-    add_node("review_revision_plan", checkpoints.review_revision_plan)
+    add_node("review_revision_plan", checkpoints.automate_revision_plan_review)
 
     # Phase 5 -- Content Drafting
     add_node("draft_content", phase5_content.draft_content)

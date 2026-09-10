@@ -1,5 +1,4 @@
-"""Phase 4 -- Gap Analysis & Remediation (Scenario 1, steps 9-10; step 10's human confirmation is
-captured by ``checkpoints.review_gap_analysis``).
+"""Phase 4 -- Gap Analysis & Remediation (Scenario 1, steps 9-10).
 
 Steps:
   9. Identify Specific Gaps.

@@ -1,5 +1,5 @@
-"""Builds the Scenario 2 LangGraph StateGraph: 7 phases, 27 steps, 3 human checkpoints, and a
-5-way parallel fan-out/fan-in for the QA phase.
+"""Builds the Scenario 2 LangGraph StateGraph: 7 phases, 27 automated steps, and a 5-way
+parallel fan-out/fan-in for the QA phase.
 """
 
 from __future__ import annotations
@@ -47,13 +47,13 @@ def build_graph() -> StateGraph:
     add_node("summarize_lessons", phase2_screen.summarize_lessons)
     add_node("analyze_strategies", phase2_screen.analyze_strategies)
     add_node("screen_combinations", phase2_screen.screen_combinations)
-    add_node("select_combination", checkpoints.select_combination)
+    add_node("select_combination", checkpoints.automate_combination_selection)
 
     # Phase 3 — Deep Instructional Analysis
     add_node("deep_review", phase3_deep_analysis.deep_review)
     add_node("map_literacy_demands", phase3_deep_analysis.map_literacy_demands)
     add_node("find_integration_points", phase3_deep_analysis.find_integration_points)
-    add_node("select_integration_point", checkpoints.select_integration_point)
+    add_node("select_integration_point", checkpoints.automate_integration_point_selection)
 
     # Phase 4 — Revision Planning
     add_node("plan_revision", phase4_revision_planning.plan_revision)
@@ -71,7 +71,7 @@ def build_graph() -> StateGraph:
     add_node("qa_coherence_pacing", phase6_qa.qa_coherence_pacing)
     add_node("qa_consistency", phase6_qa.qa_consistency)
     add_node("aggregate_qa", phase6_qa.aggregate_qa)
-    add_node("review_qa_feedback", checkpoints.review_qa_feedback)
+    add_node("review_qa_feedback", checkpoints.automate_qa_feedback_review)
 
     # Phase 7 — Finalization
     add_node("incorporate_feedback", phase7_finalization.incorporate_feedback)

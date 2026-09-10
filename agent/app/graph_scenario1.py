@@ -1,4 +1,4 @@
-"""Builds the Scenario 1 LangGraph StateGraph: 5 phases, 11 steps, 2 human checkpoints.
+"""Builds the Scenario 1 LangGraph StateGraph: 5 phases, 11 automated steps.
 
 Kept as a fully separate compiled graph (own nodes, own checkpointer file) from Scenario 2's and
 Scenario 3's graphs -- the three workflows share no state and there is no benefit to coupling them,
@@ -39,7 +39,7 @@ def build_graph() -> StateGraph:
     # Phase 2 -- Performance Target Mapping & Validation
     add_node("map_performance_targets", phase2_targets.map_performance_targets)
     add_node("validate_grade_level_depth", phase2_targets.validate_grade_level_depth)
-    add_node("review_grade_level_depth", checkpoints.review_grade_level_depth)
+    add_node("review_grade_level_depth", checkpoints.automate_grade_level_depth)
 
     # Phase 3 -- Content Alignment Review
     add_node("define_alignment_criteria", phase3_evidence.define_alignment_criteria)
@@ -49,7 +49,7 @@ def build_graph() -> StateGraph:
     # Phase 4 -- Gap Analysis & Remediation
     add_node("identify_specific_gaps", phase4_gap.identify_specific_gaps)
     add_node("recommend_remediation", phase4_gap.recommend_remediation)
-    add_node("review_gap_analysis", checkpoints.review_gap_analysis)
+    add_node("review_gap_analysis", checkpoints.automate_gap_analysis)
 
     # Phase 5 -- QA & Finalization
     add_node("qa_and_finalize", phase5_qa_finalize.qa_and_finalize)

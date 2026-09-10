@@ -19,6 +19,30 @@ from app.state_scenario3 import ScenarioState3
 from app.store import NO_OVERRIDE
 
 
+def automate_crosswalk_review(state: ScenarioState3) -> dict:
+    return {
+        "confirmed_crosswalk": state["crosswalk"],
+        "phase": "Gather & Organize",
+        "step": 4,
+    }
+
+
+def automate_alignment_map_review(state: ScenarioState3) -> dict:
+    return {
+        "confirmed_alignment_map": state["alignment_map"],
+        "phase": "Read & Map",
+        "step": 6,
+    }
+
+
+def automate_revision_plan_review(state: ScenarioState3) -> dict:
+    return {
+        "confirmed_revision_plan": state["revision_plan"],
+        "phase": "Revision Planning",
+        "step": 10,
+    }
+
+
 def review_crosswalk(state: ScenarioState3) -> dict:
     decision = interrupt(
         {

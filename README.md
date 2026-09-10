@@ -11,19 +11,16 @@ LangGraph graph):
   grade-level depth across all three dimensions of three-dimensional learning (SEP/DCI/CCC),
   defines evidence criteria, classifies every requirement as Strong/Partial/Gap, identifies
   specific gaps, recommends remediation, and runs a final QA pass for
-  accuracy/consistency/traceability/completeness — pausing for human review at the two judgment
-  calls (step 5, step 10) the workflow can't safely automate on its own.
+  accuracy/consistency/traceability/completeness through a fully automated workflow.
 - **Scenario 2 — Literacy Strategy Integration**: given three candidate "Explore" science lessons
   and a literacy-strategy reference document, screens the strongest lesson/strategy combination,
   deeply analyzes the selected lesson, plans and drafts a revision, runs five parallel QA passes,
-  and produces a final revised lesson with full rationale — pausing for human review at the three
-  judgment calls (step 7, step 11, step 24) the workflow can't safely automate on its own.
+  and produces a final revised lesson with full rationale through a fully automated workflow.
 - **Scenario 3 — State Standards Alignment**: given a unit's scope-and-sequence document, an
   authoritative state-standards reference, and its lesson + educator-support files, crosswalks the
   unit's existing (C3 framework) standards against the target state's standards, maps lesson
   content to each standard, analyzes gaps and surplus content, plans and drafts revisions, and
-  produces a final alignment package — pausing for human review at three equivalent judgment calls
-  (the crosswalk, the coverage classifications, and the revision plan).
+  produces a final alignment package through a fully automated workflow.
 
 ## Architecture
 
@@ -56,9 +53,9 @@ machinery isn't duplicated per scenario.
 | Phase | Steps | Graph nodes | Human checkpoint |
 |---|---|---|---|
 | Standards Crosswalk | 1–3 | `inventory_ngss_alignment → crosswalk_ngss_to_sc → identify_sc_deltas` | — |
-| Performance Target Mapping & Validation | 4–5 | `map_performance_targets → validate_grade_level_depth` | **`review_grade_level_depth`** |
+| Performance Target Mapping & Validation | 4–5 | `map_performance_targets → validate_grade_level_depth` | — |
 | Content Alignment Review | 6–8 | `define_alignment_criteria → review_discovery_evidence → classify_strong_partial_gap` | — |
-| Gap Analysis & Remediation | 9–10 | `identify_specific_gaps → recommend_remediation` | **`review_gap_analysis`** |
+| Gap Analysis & Remediation | 9–10 | `identify_specific_gaps → recommend_remediation` | — |
 | QA & Finalization | 11 | `qa_and_finalize → produce_final_package` | — |
 
 See `agent/app/graph_scenario1.py` for the exact wiring and `agent/app/nodes/scenario1/*.py` for
@@ -68,19 +65,19 @@ up to three rows per SC standard, one each for SEP (Science and Engineering Prac
 three-dimensional NGSS-style science learning. The final package still carries a fixed,
 non-LLM-generated note flagging South Carolina's Grade 4 assessment requirements as out of scope
 (from the original source email) for visibility, even though it isn't one of the 11 canonical
-steps. Unlike Scenario 2/3 (three checkpoints each), Scenario 1 only pauses twice — every other
-step is fully AI-automatable; only steps 5 and 10 call for a SC Science Standards SME's sign-off.
+steps. Scenario 1 is fully automated: the AI makes the grade-level-depth and gap/remediation
+decisions directly, with no human-in-the-loop pauses.
 
 ## Scenario 2 phases → graph nodes
 
 | Phase (spreadsheet) | Steps | Graph nodes | Human checkpoint |
 |---|---|---|---|
 | Gather & Organize | 1–3 | `intake → catalog_metadata → extract_strategies` | — |
-| Understand & Screen | 4–7 | `summarize_lessons → analyze_strategies → screen_combinations` | **`select_combination`** |
-| Deep Instructional Analysis | 8–11 | `deep_review → map_literacy_demands → find_integration_points` | **`select_integration_point`** |
+| Understand & Screen | 4–7 | `summarize_lessons → analyze_strategies → screen_combinations` | — |
+| Deep Instructional Analysis | 8–11 | `deep_review → map_literacy_demands → find_integration_points` | — |
 | Revision Planning | 12–14 | `plan_revision` | — |
 | Content Development | 15–18 | `draft_student_content → draft_teacher_content → update_connected_components → write_rationale` | — |
-| Quality Assurance | 19–23 | `qa_literacy_fidelity` + `qa_science_accuracy` + `qa_instructional_integrity` + `qa_coherence_pacing` + `qa_consistency` (parallel) `→ aggregate_qa` | **`review_qa_feedback`** |
+| Quality Assurance | 19–23 | `qa_literacy_fidelity` + `qa_science_accuracy` + `qa_instructional_integrity` + `qa_coherence_pacing` + `qa_consistency` (parallel) `→ aggregate_qa` | — |
 | Finalization | 24–27 | `incorporate_feedback → re_review → finalize → produce_final_package` | — |
 
 See `agent/app/graph.py` for the exact wiring and `agent/app/nodes/*.py` for each step's prompt.

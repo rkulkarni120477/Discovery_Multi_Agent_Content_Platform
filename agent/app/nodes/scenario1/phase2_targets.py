@@ -1,5 +1,4 @@
-"""Phase 2 -- Performance Target Mapping & Validation (Scenario 1, steps 4-5; step 5's human
-confirmation is captured by ``checkpoints.review_grade_level_depth``).
+"""Phase 2 -- Performance Target Mapping & Validation (Scenario 1, steps 4-5).
 
 Steps:
   4. Map SC Performance Targets.
